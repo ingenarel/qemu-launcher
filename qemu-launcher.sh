@@ -13,16 +13,14 @@ tmuxPaneOrTerminal(){
     fi
 }
 
-ramSize="4G"
-cpuCores="2"
+maxRam="$(( $(grep -E "MemTotal" /proc/meminfo | sed -e 's/[^0-9]//g') / (1024 * 1024) ))"
+logialCores="$(grep -i -E -c '^processor' /proc/cpuinfo)"
+ramSize="$(( $maxRam / 2 ))G"
+cpuCores="$(( $logialCores / 2 ))"
 
 changeQemuRam(){
     echo -en $(
-        for ((
-            i = 1;
-            i <= $(grep -E "MemTotal" /proc/meminfo | sed -e 's/[^0-9]//g') / ( 1024 * 1024);
-            i++
-        )) do
+        for (( i = 1; i <= $maxRam; i++)) do
             echo -n $i "Gibibytes of RAM\n"
         done
     )\
@@ -40,7 +38,59 @@ changeQemuRam(){
         --border-width 2\
         --border-radius 15\
     |
+    grep -oE '^[0-9]'
+}
+
+changeQemuCpu(){
+    echo -en $(
+        for (( i = 1; i <= $logialCores; i++)) do
+            echo -n $i "core\n"
+        done
+    )\
+    |
+    fuzzel\
+        --dmenu\
+        --lines 7\
+        --width 30\
+        --tabs 4\
+        --background \#110015e6\
+        --text-color \#EE70FFff\
+        --font 'Hack Nerd Font:size=15'\
+        --border-color \#ff00ffff\
+        --selection-color \#420080ff\
+        --border-width 2\
+        --border-radius 15\
+    |
+    grep -oE '^[0-9]'
+}
+
+declare -A settings=(
+    [" Memory"]="changeQemuRam"
+    [" Cpu"]="changeQemuCpu"
+)
+
+changeQemuSettings(){
+    chosen=$(echo -en $( for item in "${!settings[@]}"; do echo -n $item "\n"; done)\
+        |
+    fuzzel\
+        --dmenu\
+        --lines 2\
+        --width 15\
+        --tabs 4\
+        --background \#110015e6\
+        --text-color \#EE70FFff\
+        --font 'Hack Nerd Font:size=15'\
+        --border-color \#ff00ffff\
+        --selection-color \#420080ff\
+        --border-width 2\
+        --border-radius 15\
+    |
     sed 's/.$//'
+    )
+    echo \""$chosen"\"
+    if [[ "$chosen" != "" ]] then
+        eval "${settings["$chosen"]}"
+    fi
 }
 
 declare -A menusAndCommands=(
@@ -117,7 +167,7 @@ declare -A menusAndCommands=(
             -display sdl,gl=on\
         "
     [" Settings"]="\
-        changeQemuRam
+        changeQemuSettings
     "
 )
 
