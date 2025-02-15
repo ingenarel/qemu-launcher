@@ -65,8 +65,8 @@ changeQemuCpu(){
 }
 
 declare -A settings=(
-    [" Memory"]="changeQemuRam"
-    [" Cpu"]="changeQemuCpu"
+    [" Memory"]="ramSize=\"\$(changeQemuRam)\" startQemu"
+    [" Cpu"]="cpuCores=\"\$(changeQemuCpu)\" startQemu"
 )
 
 changeQemuSettings(){
@@ -87,7 +87,6 @@ changeQemuSettings(){
     |
     sed 's/.$//'
     )
-    echo \""$chosen"\"
     if [[ "$chosen" != "" ]] then
         eval "${settings["$chosen"]}"
     fi
@@ -171,26 +170,29 @@ declare -A menusAndCommands=(
     "
 )
 
-chosen=$(echo -en $( for item in "${!menusAndCommands[@]}"; do echo -n $item "\n"; done)\
-    |
-    fuzzel\
-        --dmenu\
-        --lines 10\
-        --width 35\
-        --tabs 4\
-        --background \#110015e6\
-        --text-color \#EE70FFff\
-        --font 'Hack Nerd Font:size=15'\
-        --border-color \#ff00ffff\
-        --selection-color \#420080ff\
-        --border-width 2\
-        --border-radius 15\
-        --prompt "RAM: $ramSize CORES: $cpuCores => "\
-    |
-    sed 's/.$//'
-)
+startQemu(){
+    chosen=$(echo -en $( for item in "${!menusAndCommands[@]}"; do echo -n $item "\n"; done)\
+        |
+        fuzzel\
+            --dmenu\
+            --lines 10\
+            --width 35\
+            --tabs 4\
+            --background \#110015e6\
+            --text-color \#EE70FFff\
+            --font 'Hack Nerd Font:size=15'\
+            --border-color \#ff00ffff\
+            --selection-color \#420080ff\
+            --border-width 2\
+            --border-radius 15\
+            --prompt "RAM: $ramSize CORES: $cpuCores => "\
+        |
+        sed 's/.$//'
+    )
+}
 
-echo \""$chosen"\"
+startQemu
+
 if [[ "$chosen" != "" ]] then
     eval "${menusAndCommands["$chosen"]}"
 fi
