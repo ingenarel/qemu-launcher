@@ -19,26 +19,28 @@ ramSize="$(( $maxRam / 2 ))G"
 cpuCores="$(( $logialCores / 2 ))"
 
 changeQemuRam(){
-    echo -en $(
-        for (( i = 1; i <= $maxRam; i++)) do
-            echo -n $i "Gibibytes of RAM\n"
-        done
-    )\
-    |
-    fuzzel\
-        --dmenu\
-        --lines 7\
-        --width 30\
-        --tabs 4\
-        --background \#110015e6\
-        --text-color \#EE70FFff\
-        --font 'Hack Nerd Font:size=15'\
-        --border-color \#ff00ffff\
-        --selection-color \#420080ff\
-        --border-width 2\
-        --border-radius 15\
-    |
-    grep -oE '^[0-9]'
+    echo "$(
+        echo -en $(
+            for (( i = 1; i <= $maxRam; i++)) do
+                echo -n $i "Gibibytes of RAM\n"
+            done
+        )\
+        |
+        fuzzel\
+            --dmenu\
+            --lines 7\
+            --width 30\
+            --tabs 4\
+            --background \#110015e6\
+            --text-color \#EE70FFff\
+            --font 'Hack Nerd Font:size=15'\
+            --border-color \#ff00ffff\
+            --selection-color \#420080ff\
+            --border-width 2\
+            --border-radius 15\
+        |
+        grep -oE '^[0-9]'
+    )G"
 }
 
 changeQemuCpu(){
@@ -65,8 +67,8 @@ changeQemuCpu(){
 }
 
 declare -A settings=(
-    [" Memory"]="ramSize=\"\$(changeQemuRam)\" startQemu"
-    [" Cpu"]="cpuCores=\"\$(changeQemuCpu)\" startQemu"
+    [" Memory"]="ramSize=\"\$(changeQemuRam)\""
+    [" Cpu"]="cpuCores=\"\$(changeQemuCpu)\""
 )
 
 changeQemuSettings(){
@@ -100,9 +102,9 @@ declare -A menusAndCommands=(
                 -cdrom /mnt/D/qemu/archlinux-2025.02.01-x86_64.iso\
                 -drive file=/mnt/D/qemu/archLinuxImage\
                 -boot order=d\
-                -m $ramSize\
+                -m \"\$ramSize\"\
                 -cpu host\
-                -smp $cpuCores\
+                -smp \"\$cpuCores\"\
                 -nographic\
         \"\
     "
@@ -112,9 +114,9 @@ declare -A menusAndCommands=(
             -cdrom /mnt/D/qemu/archlinux-2025.02.01-x86_64.iso\
             -drive file=/mnt/D/qemu/archLinuxImage\
             -boot order=d\
-            -m $ramSize\
+            -m \"\$ramSize\"\
             -cpu host\
-            -smp $cpuCores\
+            -smp \"\$cpuCores\"\
             -full-screen\
             -vga virtio\
             -display sdl,gl=on\
@@ -124,9 +126,9 @@ declare -A menusAndCommands=(
             qemu-system-x86_64\
                 -enable-kvm\
                 -drive file=/mnt/D/qemu/archLinuxImage\
-                -m $ramSize\
+                -m \"\$ramSize\"\
                 -cpu host\
-                -smp $cpuCores\
+                -smp \"\$cpuCores\"\
                 -nographic\
         \"\
     "
@@ -134,9 +136,9 @@ declare -A menusAndCommands=(
         qemu-system-x86_64\
             -enable-kvm\
             -drive file=/mnt/D/qemu/archLinuxImage\
-            -m $ramSize\
+            -m \"\$ramSize\"\
             -cpu host\
-            -smp $cpuCores\
+            -smp \"\$cpuCores\"\
             -full-screen\
             -vga virtio\
             -display sdl,gl=on\
@@ -147,9 +149,9 @@ declare -A menusAndCommands=(
             -cdrom /mnt/D/qemu/nixos-minimal-24.11.714127.f5a32fa27df9-x86_64-linux.iso\
             -drive file=/mnt/D/qemu/nixOS_image\
             -boot order=d\
-            -m $ramSize\
+            -m \"\$ramSize\"\
             -cpu host\
-            -smp $cpuCores\
+            -smp \"\$cpuCores\"\
             -full-screen\
             -vga virtio\
             -display sdl,gl=on\
@@ -158,9 +160,9 @@ declare -A menusAndCommands=(
         qemu-system-x86_64\
             -enable-kvm\
             -drive file=/mnt/D/qemu/nixOS_image\
-            -m $ramSize\
+            -m \"\$ramSize\"\
             -cpu host\
-            -smp $cpuCores\
+            -smp \"\$cpuCores\"\
             -full-screen\
             -vga virtio\
             -display sdl,gl=on\
@@ -191,8 +193,16 @@ startQemu(){
     )
 }
 
-startQemu
-
-if [[ "$chosen" != "" ]] then
-    eval "${menusAndCommands["$chosen"]}"
-fi
+while true; do
+    startQemu
+    if [[ -n "$chosen" ]]; then
+        if [[ "$chosen" == " Settings" ]]; then
+            changeQemuSettings
+        else
+            eval "${menusAndCommands["$chosen"]}"
+            exit 0
+        fi
+    else
+        exit 0
+    fi
+done
