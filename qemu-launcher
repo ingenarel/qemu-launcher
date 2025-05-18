@@ -77,13 +77,15 @@ launchQemu(){ #{{{
         -smp \"\$cpuCores\"\
         -net nic\
         -net user,hostfwd=tcp::10022-:22\
-        -drive file=\"\$1\"\
-        -vga virtio\
-        -display gtk,gl=on"
+        -drive file=\"\$1\""
 
     [[ -n $2 ]] && executeCommand="${executeCommand} -cdrom \"\$2\" -boot order=d"
 
-    eval "$executeCommand"
+    if [[ -z $3 || $3 == "gui" ]]; then
+        eval "${executeCommand} -vga virtio -display gtk,gl=on"
+    elif [[ $3 == "tui" ]]; then
+        eval "${executeCommand} -vga none -display none" & tmuxPaneOrTerminal "kitty" "sleep 5 && ssh $USER@localhost -p10022"
+    fi
 } #}}}
 
 declare -A settings=( # {{{
@@ -171,7 +173,11 @@ installAlpineIso(){ # {{{
 launchAlpineInstaller(){ # {{{
     installAlpineIso
     createQemuImage "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/storage/alpine-virt-latest-drive.img"
-    launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/images/alpine-virt-latest.iso"
+    if [[ -z $1 || $1 == "gui" ]]; then
+        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/images/alpine-virt-latest.iso"
+    elif [[ $1 == "tui" ]]; then
+        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/images/alpine-virt-latest.iso" "tui"
+    fi
 } # }}}
 
 launchAlpine(){ # {{{
@@ -179,7 +185,11 @@ launchAlpine(){ # {{{
         launchAlpineInstaller
         exit 0;
     fi
-    launchQemu "$storageDir/images/alpine-virt-latest-drive.img"
+    if [[ -z $1 || $1 == "gui" ]]; then
+        launchQemu "$storageDir/images/alpine-virt-latest-drive.img"
+    elif [[ $1 == "tui" ]]; then
+        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "" "tui"
+    fi
 } # }}}
 
 installGentooIso(){ # {{{
@@ -204,7 +214,11 @@ installGentooIso(){ # {{{
 launchGentooInstaller(){ # {{{
     installGentooIso
     createQemuImage "$storageDir/images/gentoo-latest-drive.img" "$storageDir/storage/gentoo-latest-drive.img"
-    launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/images/gentoo-latest.iso"
+    if [[ -z $1 || $1 == "gui" ]]; then
+        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/images/gentoo-latest.iso"
+    elif [[ $1 == "tui" ]]; then
+        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/images/gentoo-latest.iso" "tui"
+    fi
 } # }}}
 
 launchGentoo(){ # {{{
@@ -212,7 +226,11 @@ launchGentoo(){ # {{{
         launchGentooInstaller
         exit 0;
     fi
-    launchQemu "$storageDir/images/gentoo-latest-drive.img"
+    if [[ -z $1 || $1 == "gui" ]];then
+        launchQemu "$storageDir/images/gentoo-latest-drive.img"
+    elif [[ $1 == "tui" ]]; then
+        launchQemu "$storageDir/images/gentoo-latest-drive.img" "" "tui"
+    fi
 } # }}}
 
 installNixIso(){ # {{{
@@ -237,7 +255,11 @@ installNixIso(){ # {{{
 launchNixInstaller(){ # {{{
     installNixIso
     createQemuImage "$storageDir/images/nix-latest-drive.img" "$storageDir/storage/nix-latest-drive.img"
-    launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/images/nix-latest.iso"
+    if [[ -z $1 || $1 == "gui" ]]; then
+        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/images/nix-latest.iso"
+    elif [[ $1 == "tui" ]]; then
+        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/images/nix-latest.iso" "tui"
+    fi
 } # }}}
 
 launchNix(){ # {{{
@@ -245,7 +267,11 @@ launchNix(){ # {{{
         launchNixInstaller
         exit 0;
     fi
-    launchQemu "$storageDir/images/nix-latest-drive.img"
+    if [[ -z $1 || $1 == "gui" ]]; then
+        launchQemu "$storageDir/images/nix-latest-drive.img"
+    elif [[ $1 == "tui" ]]; then
+        launchQemu "$storageDir/images/nix-latest-drive.img" "" "tui"
+    fi
 } # }}}
 
 installArchIso(){ # {{{
@@ -274,7 +300,11 @@ installArchIso(){ # {{{
 launchArchInstaller(){ # {{{
     installArchIso
     createQemuImage "$storageDir/images/arch-latest-drive.img" "$storageDir/storage/arch-latest-drive.img"
-    launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/images/arch-latest.iso"
+    if [[ -z $1 || $1 == "gui" ]]; then
+        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/images/arch-latest.iso"
+    elif [[ $1 == "tui" ]]; then
+        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/images/arch-latest.iso" "tui"
+    fi
 } # }}}
 
 launchArch(){ # {{{
@@ -282,18 +312,43 @@ launchArch(){ # {{{
         launchArchInstaller
         exit 0;
     fi
-    launchQemu "$storageDir/images/arch-latest-drive.img"
+    if [[ -z $1 || $1 == "gui" ]]; then
+        launchQemu "$storageDir/images/arch-latest-drive.img"
+    elif [[ $1 == "tui" ]]; then
+        launchQemu "$storageDir/images/arch-latest-drive.img" "" "tui"
+    fi
 } # }}}
 
 declare -A menusAndCommands=( # {{{
-    [" Arch linux installer; Gui"]="launchArchInstaller"
+    [" Arch linux installer; GUI"]="launchArchInstaller"
+    [" Arch linux installer; TUI"]="launchArchInstaller tui"
+
     [" Arch linux; Gui"]="launchArch"
+    [" Arch linux; TUI"]="launchArch tui"
+
+
+
     ["󱄅 NixOS installer; GUI"]="launchNixInstaller"
+    ["󱄅 NixOS installer; TUI"]="launchNixInstaller tui"
+
     ["󱄅 NixOS; GUI"]="launchNix"
+    ["󱄅 NixOS; TUI"]="launchNix tui"
+
+
     [" Alpine installer; GUI"]="launchAlpineInstaller"
+    [" Alpine installer; TUI"]="launchAlpineInstaller tui"
+
     [" Alpine; GUI"]="launchAlpine"
+    [" Alpine; TUI"]="launchAlpine tui"
+
+
     [" Gentoo installer; GUI"]="launchGentooInstaller"
+    [" Gentoo installer; TUI"]="launchGentooInstaller tui"
+
     [" Gentoo; GUI"]="launchGentoo"
+    [" Gentoo; TUI"]="launchGentoo tui"
+
+
     [" Settings"]="changeQemuSettings "
 ) # }}}
 
