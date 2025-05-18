@@ -81,11 +81,8 @@ launchQemu(){ #{{{
         -vga virtio\
         -display gtk,gl=on"
 
-    if [[ $2 != "" ]]; then
-        executeCommand="${executeCommand}\
-            -cdrom \"\$2\"\
-            -boot order=d"
-    fi
+    [[ -n $2 ]] && executeCommand="${executeCommand} -cdrom \"\$2\" -boot order=d"
+
     eval "$executeCommand"
 } #}}}
 
@@ -116,9 +113,9 @@ changeQemuSettings(){ # {{{
     |
     sed 's/.$//'
     )"
-    if [[ "$chosen" != "" ]]; then
-        eval "${settings["$chosen"]}"
-    fi
+
+    [[ -n $chosen ]] && eval "${settings["$chosen"]}"
+
 } # }}}
 
 createQemuImage(){ # {{{
@@ -326,12 +323,8 @@ startQemu(){ # {{{
     )"
 } # }}}
 
-if [[ ! -d "$storageDir/images" ]]; then # {{{
-    mkdir --parents "$storageDir/images"
-fi
-if [[ ! -d "$storageDir/storage" ]]; then
-    mkdir --parents "$storageDir/storage"
-fi # }}}
+[[ ! -d "$storageDir/images" ]] && mkdir --parents "$storageDir/images"
+[[ ! -d "$storageDir/storage" ]] && mkdir --parents "$storageDir/storage"
 
 while true; do # {{{
     startQemu
