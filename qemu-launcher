@@ -84,7 +84,7 @@ launchQemu(){ #{{{
     if [[ -z $3 || $3 == "gui" ]]; then
         eval "${executeCommand} -vga virtio -display gtk,gl=on"
     elif [[ $3 == "tui" ]]; then
-        eval "${executeCommand} -vga none -display none" & tmuxPaneOrTerminal "kitty" "sleep 5 && ssh $USER@localhost -p10022"
+            eval "${executeCommand} -vga none -display none" & tmuxPaneOrTerminal "kitty" "sleep 5 && ssh -t $USER@localhost -p10022 'tmux'"
     fi
 } #}}}
 
