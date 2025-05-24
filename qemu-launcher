@@ -84,10 +84,11 @@ launchQemu(){ #{{{
     if [[ -z $3 || $3 == "gui" ]]; then
         eval "${executeCommand} -vga virtio -display gtk,gl=on"
     elif [[ $3 == "tui" ]]; then
+        sshCommand="ssh -t $USER@localhost -p10022 'tmux' || ( ssh-keygen -R '[localhost]:10022' && ssh -t $USER@localhost -p10022 'tmux' )"
         if pgrep -f "qemu.+$1"; then
-            tmuxPaneOrTerminal "kitty" "ssh -t $USER@localhost -p10022 'tmux'"
+            tmuxPaneOrTerminal "kitty" "$sshCommand"
         else
-            eval "${executeCommand} -vga none -display none" & tmuxPaneOrTerminal "kitty" "sleep 5 && ssh -t $USER@localhost -p10022 'tmux'"
+            eval "${executeCommand} -vga none -display none" & tmuxPaneOrTerminal "kitty" "$sshCommand"
         fi
     fi
 } #}}}
