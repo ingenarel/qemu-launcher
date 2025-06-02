@@ -129,7 +129,7 @@ changeQemuSettings(){ # {{{
 createQemuImage(){ # {{{
     if [[ ! -f "$1" ]]; then
         echo "latest drive not found"
-        qemu-img create -f qcow2 "$2" "$(
+        qemu-img create -f qcow2 "$1" "$(
             echo -en "$(
                 for (( i = 1; i<= 30; i++))  do
                     echo -n "$i G\n";
@@ -148,21 +148,20 @@ createQemuImage(){ # {{{
                 --selection-color \#420080ff\
                 --border-width 2\
                 --border-radius 15\
-                --prompt "$2 size: "\
+                --prompt "$1 size: "\
             |
             grep -oE '^[0-9]+'
         )G"
-        ln -sf "$2" "$1"
     fi
 
 } # }}}
 
 installAlpineIso(){ # {{{
-    if [[ ! -f "$storageDir/images/alpine-virt-latest.iso" ]] ; then
+    if [[ ! -f "$storageDir/isos/alpine-virt-latest.iso" ]] ; then
         echo "alpine not found"
         wget\
             --no-use-server-timestamps\
-            --directory-prefix="$storageDir/storage"\
+            --directory-prefix="$storageDir/isos"\
             "$(
                 curl https://alpinelinux.org/downloads/\
                 |
@@ -171,18 +170,18 @@ installAlpineIso(){ # {{{
                 sed -E 's/.+href="//; s/".+//; s/\&#x2F;/\//g'
             )"
 
-        fileName=$(ls -t "$storageDir/storage" | head -n1)
-        ln -sf "$storageDir/storage/$fileName" "$storageDir/images/alpine-virt-latest.iso"
+        fileName=$(ls -t "$storageDir/isos" | head -n1)
+        mv "$storageDir/isos/$fileName" "$storageDir/isos/alpine-virt-latest.iso"
     fi
 } # }}}
 
 launchAlpineInstaller(){ # {{{
     installAlpineIso
-    createQemuImage "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/storage/alpine-virt-latest-drive.img"
+    createQemuImage "$storageDir/images/alpine-virt-latest-drive.img"
     if [[ -z $1 || $1 == "gui" ]]; then
-        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/images/alpine-virt-latest.iso"
+        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso"
     elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/images/alpine-virt-latest.iso" "tui"
+        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso" "tui"
     fi
 } # }}}
 
@@ -199,11 +198,11 @@ launchAlpine(){ # {{{
 } # }}}
 
 installGentooIso(){ # {{{
-    if [[ ! -f "$storageDir/images/gentoo-latest.iso" ]] ; then
+    if [[ ! -f "$storageDir/isos/gentoo-latest.iso" ]] ; then
         echo "gentoo not found"
         wget\
             --no-use-server-timestamps\
-            --directory-prefix="$storageDir/storage"\
+            --directory-prefix="$storageDir/isos"\
             "$(
                 curl https://www.gentoo.org/downloads/\
                 |
@@ -212,18 +211,18 @@ installGentooIso(){ # {{{
                 head -n1
             )"
 
-        fileName=$(ls -t "$storageDir/storage" | head -n1)
-        ln -sf "$storageDir/storage/$fileName" "$storageDir/images/gentoo-latest.iso"
+        fileName=$(ls -t "$storageDir/isos" | head -n1)
+        mv "$storageDir/isos/$fileName" "$storageDir/isos/gentoo-latest.iso"
     fi
 } # }}}
 
 launchGentooInstaller(){ # {{{
     installGentooIso
-    createQemuImage "$storageDir/images/gentoo-latest-drive.img" "$storageDir/storage/gentoo-latest-drive.img"
+    createQemuImage "$storageDir/images/gentoo-latest-drive.img"
     if [[ -z $1 || $1 == "gui" ]]; then
-        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/images/gentoo-latest.iso"
+        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso"
     elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/images/gentoo-latest.iso" "tui"
+        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso" "tui"
     fi
 } # }}}
 
@@ -240,11 +239,11 @@ launchGentoo(){ # {{{
 } # }}}
 
 installNixIso(){ # {{{
-    if [[ ! -f "$storageDir/images/nix-latest.iso" ]] ; then
+    if [[ ! -f "$storageDir/isos/nix-latest.iso" ]] ; then
         echo "nix not found"
         wget\
             --no-use-server-timestamps\
-            --directory-prefix="$storageDir/storage"\
+            --directory-prefix="$storageDir/isos"\
             "$(
                 curl https://nixos.org/download/\
                 |
@@ -253,18 +252,18 @@ installNixIso(){ # {{{
                 head -n1
             )"
 
-        fileName=$(ls -t "$storageDir/storage" | head -n1)
-        ln -sf "$storageDir/storage/$fileName" "$storageDir/images/nix-latest.iso"
+        fileName=$(ls -t "$storageDir/isos" | head -n1)
+        mv "$storageDir/isos/$fileName" "$storageDir/isos/nix-latest.iso"
     fi
 } # }}}
 
 launchNixInstaller(){ # {{{
     installNixIso
-    createQemuImage "$storageDir/images/nix-latest-drive.img" "$storageDir/storage/nix-latest-drive.img"
+    createQemuImage "$storageDir/images/nix-latest-drive.img"
     if [[ -z $1 || $1 == "gui" ]]; then
-        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/images/nix-latest.iso"
+        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso"
     elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/images/nix-latest.iso" "tui"
+        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso" "tui"
     fi
 } # }}}
 
@@ -282,12 +281,12 @@ launchNix(){ # {{{
 
 installArchIso(){ # {{{
     # https://geo.mirror.pkgbuild.com/iso/2025.05.01/archlinux-2025.05.01-x86_64.iso
-    if [[ ! -f "$storageDir/images/arch-latest.iso" ]] ; then
+    if [[ ! -f "$storageDir/isos/arch-latest.iso" ]] ; then
         echo "arch not found"
         downloadLink="$(curl https://archlinux.org/download/ | grep -oE 'https://geo\.mirror\.pkgbuild\.com/iso/\S+/')"
         wget\
             --no-use-server-timestamps\
-            --directory-prefix="$storageDir/storage"\
+            --directory-prefix="$storageDir/isos"\
             "${downloadLink}$(
                 curl "$downloadLink"\
                     |
@@ -298,18 +297,18 @@ installArchIso(){ # {{{
                 sed -E 's/".+//'
             )"
 
-        fileName=$(ls -t "$storageDir/storage" | head -n1)
-        ln -sf "$storageDir/storage/$fileName" "$storageDir/images/arch-latest.iso"
+        fileName=$(ls -t "$storageDir/isos" | head -n1)
+        mv "$storageDir/isos/$fileName" "$storageDir/isos/arch-latest.iso"
     fi
 } # }}}
 
 launchArchInstaller(){ # {{{
     installArchIso
-    createQemuImage "$storageDir/images/arch-latest-drive.img" "$storageDir/storage/arch-latest-drive.img"
+    createQemuImage "$storageDir/images/arch-latest-drive.img"
     if [[ -z $1 || $1 == "gui" ]]; then
-        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/images/arch-latest.iso"
+        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso"
     elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/images/arch-latest.iso" "tui"
+        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso" "tui"
     fi
 } # }}}
 
@@ -385,7 +384,7 @@ startQemu(){ # {{{
 } # }}}
 
 [[ ! -d "$storageDir/images" ]] && mkdir --parents "$storageDir/images"
-[[ ! -d "$storageDir/storage" ]] && mkdir --parents "$storageDir/storage"
+[[ ! -d "$storageDir/isos" ]] && mkdir --parents "$storageDir/isos"
 
 while true; do # {{{
     startQemu
