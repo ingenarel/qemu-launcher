@@ -16,6 +16,29 @@ tmuxPaneOrTerminal(){ # {{{
     fi
 } # }}}
 
+pickMenu(){
+    local menu
+    [[ -n $WAYLAND_DISPLAY ]] && {
+        command -v fuzzel >/dev/null 2>&1 && {
+            menu="fuzzel --dmenu"
+        } || {
+        command -v tofi >/dev/null 2>&1 && {
+            menu="tofi"
+        } || {
+        command -v rofi >/dev/null 2>&1 && {
+            menu="rofi"
+        } || {
+        command - wofi >/dev/null 2>&1 && {
+            menu="wofi"
+        }; }; }; }
+    } || {
+        command -v fzf >/dev/null 2>&1 && {
+            menu="fzf"
+        }
+    }
+    eval "$menu" "$@"
+}
+
 maxRam="$(( $(grep --extended-regexp "MemTotal" /proc/meminfo | sed --expression='s/[^0-9]//g') / (1024 * 1024) ))"
 logialCores="$(grep -i --extended-regexp -c '^processor' /proc/cpuinfo)"
 ramSize="$(( maxRam / 2 ))G"
@@ -29,18 +52,7 @@ changeQemuRam(){ # {{{
             done
         )"\
         |
-        fuzzel\
-            --dmenu\
-            --lines 7\
-            --width 30\
-            --tabs 4\
-            --background \#110015e6\
-            --text-color \#EE70FFff\
-            --font 'Hack Nerd Font:size=15'\
-            --border-color \#ff00ffff\
-            --selection-color \#420080ff\
-            --border-width 2\
-            --border-radius 15\
+        pickMenu "$@"\
         |
         grep -oE '^[0-9]+'
     )G"
@@ -53,18 +65,7 @@ changeQemuCpu(){ # {{{
         done
     )"\
     |
-    fuzzel\
-        --dmenu\
-        --lines 7\
-        --width 30\
-        --tabs 4\
-        --background \#110015e6\
-        --text-color \#EE70FFff\
-        --font 'Hack Nerd Font:size=15'\
-        --border-color \#ff00ffff\
-        --selection-color \#420080ff\
-        --border-width 2\
-        --border-radius 15\
+    pickMenu "$@"\
     |
     grep -oE '^[0-9]+'
 } # }}}
@@ -105,21 +106,10 @@ changeQemuSettings(){ # {{{
             echo -n "$item" "\n";
         done
     )"\
-        |
-    fuzzel\
-        --dmenu\
-        --lines 2\
-        --width 15\
-        --tabs 4\
-        --background \#110015e6\
-        --text-color \#EE70FFff\
-        --font 'Hack Nerd Font:size=15'\
-        --border-color \#ff00ffff\
-        --selection-color \#420080ff\
-        --border-width 2\
-        --border-radius 15\
     |
-    sed 's/.$//'
+        pickMenu "$@"\
+    |
+        sed 's/.$//'
     )"
 
     [[ -n $chosen ]] && eval "${settings["$chosen"]}"
@@ -136,19 +126,7 @@ createQemuImage(){ # {{{
                 done
             )"\
             |
-            fuzzel\
-                --dmenu\
-                --lines 10\
-                --width 35\
-                --tabs 4\
-                --background \#110015e6\
-                --text-color \#EE70FFff\
-                --font 'Hack Nerd Font:size=15'\
-                --border-color \#ff00ffff\
-                --selection-color \#420080ff\
-                --border-width 2\
-                --border-radius 15\
-                --prompt "$1 size: "\
+            pickMenu "$@"\
             |
             grep -oE '^[0-9]+'
         )G"
@@ -365,19 +343,7 @@ startQemu(){ # {{{
             done
         )"\
         |
-        fuzzel\
-            --dmenu\
-            --lines 10\
-            --width 35\
-            --tabs 4\
-            --background \#110015e6\
-            --text-color \#EE70FFff\
-            --font 'Hack Nerd Font:size=15'\
-            --border-color \#ff00ffff\
-            --selection-color \#420080ff\
-            --border-width 2\
-            --border-radius 15\
-            --prompt "RAM: $ramSize CORES: $cpuCores => "\
+        pickMenu "$@"\
         |
         sed 's/.$//'
     )"
@@ -387,7 +353,7 @@ startQemu(){ # {{{
 [[ ! -d "$storageDir/isos" ]] && mkdir --parents "$storageDir/isos"
 
 while true; do # {{{
-    startQemu
+    startQemu "$@"
     if [[ -n "$chosen" ]]; then
         if [[ "$chosen" == " Settings" ]]; then
             changeQemuSettings
