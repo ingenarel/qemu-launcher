@@ -17,26 +17,27 @@ tmuxPaneOrTerminal(){ # {{{
 } # }}}
 
 pickMenu(){
-    local menu
-    [[ -n $WAYLAND_DISPLAY ]] && {
-        command -v fuzzel >/dev/null 2>&1 && {
-            menu="fuzzel --dmenu"
+    [[ -z $QEMU_LAUNCHER_MENU ]] && {
+        [[ -n $WAYLAND_DISPLAY ]] && {
+            command -v fuzzel >/dev/null 2>&1 && {
+                QEMU_LAUNCHER_MENU="fuzzel --dmenu"
+            } || {
+            command -v tofi >/dev/null 2>&1 && {
+                QEMU_LAUNCHER_MENU="tofi"
+            } || {
+            command -v rofi >/dev/null 2>&1 && {
+                QEMU_LAUNCHER_MENU="rofi"
+            } || {
+            command - wofi >/dev/null 2>&1 && {
+                QEMU_LAUNCHER_MENU="wofi"
+            }; }; }; }
         } || {
-        command -v tofi >/dev/null 2>&1 && {
-            menu="tofi"
-        } || {
-        command -v rofi >/dev/null 2>&1 && {
-            menu="rofi"
-        } || {
-        command - wofi >/dev/null 2>&1 && {
-            menu="wofi"
-        }; }; }; }
-    } || {
-        command -v fzf >/dev/null 2>&1 && {
-            menu="fzf"
+            command -v fzf >/dev/null 2>&1 && {
+                QEMU_LAUNCHER_MENU="fzf"
+            }
         }
     }
-    eval "$menu" "$@"
+    eval "$QEMU_LAUNCHER_MENU" "$@"
 }
 
 maxRam="$(( $(grep --extended-regexp "MemTotal" /proc/meminfo | sed --expression='s/[^0-9]//g') / (1024 * 1024) ))"
