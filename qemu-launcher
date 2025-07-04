@@ -4,19 +4,8 @@
 storageDir="$HOME/.local/share/qemu-launcher"
 
 #@formatter:off
-tmuxPaneOrTerminal(){ # {{{
-    if hyprctl activewindow | grep --quiet tmux ; then
-        tmux new-window "$2";
-    else
-        if [[ "$3" ]]; then
-            $1 -c "$3" -e sh -c "export TERM=tmux-256color; $2";
-        else
-            $1 -e sh -c "export TERM=tmux-256color; $2";
-        fi
-    fi
-} # }}}
 
-pickMenu(){
+pickMenu(){ # {{{
     [[ -z $QEMU_LAUNCHER_MENU ]] && {
         [[ -n $WAYLAND_DISPLAY ]] && {
             command -v fuzzel >/dev/null 2>&1 && {
@@ -38,7 +27,7 @@ pickMenu(){
         }
     }
     eval "$QEMU_LAUNCHER_MENU" "$@"
-}
+} # }}}
 
 maxRam="$(( $(grep --extended-regexp "MemTotal" /proc/meminfo | sed --expression='s/[^0-9]//g') / (1024 * 1024) ))"
 logialCores="$(grep -i --extended-regexp -c '^processor' /proc/cpuinfo)"
@@ -86,13 +75,37 @@ launchQemu(){ #{{{
 
     if [[ -z $3 || $3 == "gui" ]]; then
         eval "${executeCommand} -vga virtio -display gtk,gl=on"
-    elif [[ $3 == "tui" ]]; then
-        sshCommand="ssh -t $USER@localhost -p$qemuHostPort 'tmux' || ( ssh-keygen -R '[localhost]:$qemuHostPort' && ssh -t $USER@localhost -p$qemuHostPort 'tmux' )"
-        if pgrep -f "qemu.+$1"; then
-            tmuxPaneOrTerminal "kitty" "$sshCommand"
-        else
-            eval "${executeCommand} -vga none -display none" & tmuxPaneOrTerminal "kitty" "$sshCommand"
-        fi
+    # elif [[ $3 == "ssh" ]]; then
+    #     sshCommand="ssh -t $USER@localhost -p$qemuHostPort 'tmux' || ( ssh-keygen -R '[localhost]:$qemuHostPort' && ssh -t $USER@localhost -p$qemuHostPort 'tmux' )"
+    #     if pgrep -f "qemu.+$1"; then
+    #         tmuxPaneOrTerminal "kitty" "$sshCommand"
+    #     else
+    #         eval "${executeCommand} -vga none -display none" & tmuxPaneOrTerminal "kitty" "$sshCommand"
+    #     fi
+    elif [[ $3 == "qemu-TUI" ]]; then
+        local mountDir="$storageDir/mounts/$(echo "$2" | grep -oE '[^/]+$')"
+        local password="$(pickMenu --prompt="Password: ")"
+        echo "$password" | sudo -S mount --onlyonce --mkdir "$2" "$mountDir"
+        echo "$2" | grep -E "arch" && {
+            executeCommand+=" -kernel $mountDir$(
+                sed\
+                    --quiet\
+                    -E "s/^linux\s*(.)/\1/p"\
+                    /home/ingenarel/.local/share/qemu-launcher/mounts/arch-latest.iso/loader/entries/01-archiso-x86_64-linux.conf)\
+            -initrd $mountDir$(
+                sed\
+                    --quiet\
+                    -E "s/^initrd\s*(.)/\1/p"\
+                    /home/ingenarel/.local/share/qemu-launcher/mounts/arch-latest.iso/loader/entries/01-archiso-x86_64-linux.conf)\
+            -append '$(
+                sed\
+                    --quiet\
+                    -E "s/^options\s*(.)/\1/p"\
+                    /home/ingenarel/.local/share/qemu-launcher/mounts/arch-latest.iso/loader/entries/01-archiso-x86_64-linux.conf
+                ) console=ttyS0' -nographic"
+        }
+        eval "$executeCommand"
+        sudo -S umount "$mountDir"
     fi
 } #}}}
 
@@ -127,7 +140,7 @@ createQemuImage(){ # {{{
                 done
             )"\
             |
-            pickMenu "$@"\
+            pickMenu\
             |
             grep -oE '^[0-9]+'
         )G"
@@ -159,8 +172,8 @@ launchAlpineInstaller(){ # {{{
     createQemuImage "$storageDir/images/alpine-virt-latest-drive.img"
     if [[ -z $1 || $1 == "gui" ]]; then
         launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso"
-    elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso" "tui"
+    elif [[ $1 == "qemu-TUI" ]]; then
+        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso" "qemu-TUI"
     fi
 } # }}}
 
@@ -171,8 +184,8 @@ launchAlpine(){ # {{{
     fi
     if [[ -z $1 || $1 == "gui" ]]; then
         launchQemu "$storageDir/images/alpine-virt-latest-drive.img"
-    elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "" "tui"
+    elif [[ $1 == "qemu-TUI" ]]; then
+        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "" "qemu-TUI"
     fi
 } # }}}
 
@@ -200,8 +213,8 @@ launchGentooInstaller(){ # {{{
     createQemuImage "$storageDir/images/gentoo-latest-drive.img"
     if [[ -z $1 || $1 == "gui" ]]; then
         launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso"
-    elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso" "tui"
+    elif [[ $1 == "qemu-TUI" ]]; then
+        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso" "qemu-TUI"
     fi
 } # }}}
 
@@ -212,8 +225,8 @@ launchGentoo(){ # {{{
     fi
     if [[ -z $1 || $1 == "gui" ]];then
         launchQemu "$storageDir/images/gentoo-latest-drive.img"
-    elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/gentoo-latest-drive.img" "" "tui"
+    elif [[ $1 == "qemu-TUI" ]]; then
+        launchQemu "$storageDir/images/gentoo-latest-drive.img" "" "qemu-TUI"
     fi
 } # }}}
 
@@ -241,8 +254,8 @@ launchNixInstaller(){ # {{{
     createQemuImage "$storageDir/images/nix-latest-drive.img"
     if [[ -z $1 || $1 == "gui" ]]; then
         launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso"
-    elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso" "tui"
+    elif [[ $1 == "qemu-TUI" ]]; then
+        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso" "qemu-TUI"
     fi
 } # }}}
 
@@ -253,8 +266,8 @@ launchNix(){ # {{{
     fi
     if [[ -z $1 || $1 == "gui" ]]; then
         launchQemu "$storageDir/images/nix-latest-drive.img"
-    elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/nix-latest-drive.img" "" "tui"
+    elif [[ $1 == "qemu-TUI" ]]; then
+        launchQemu "$storageDir/images/nix-latest-drive.img" "" "qemu-TUI"
     fi
 } # }}}
 
@@ -286,8 +299,8 @@ launchArchInstaller(){ # {{{
     createQemuImage "$storageDir/images/arch-latest-drive.img"
     if [[ -z $1 || $1 == "gui" ]]; then
         launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso"
-    elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso" "tui"
+    elif [[ $1 == "qemu-TUI" ]]; then
+        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso" "qemu-TUI"
     fi
 } # }}}
 
@@ -298,39 +311,37 @@ launchArch(){ # {{{
     fi
     if [[ -z $1 || $1 == "gui" ]]; then
         launchQemu "$storageDir/images/arch-latest-drive.img"
-    elif [[ $1 == "tui" ]]; then
-        launchQemu "$storageDir/images/arch-latest-drive.img" "" "tui"
+    elif [[ $1 == "qemu-TUI" ]]; then
+        launchQemu "$storageDir/images/arch-latest-drive.img" "" "qemu-TUI"
     fi
 } # }}}
 
 declare -A menusAndCommands=( # {{{
     [" Arch linux installer; GUI"]="launchArchInstaller"
-    [" Arch linux installer; TUI"]="launchArchInstaller tui"
+    [" Arch linux installer; qemu-TUI"]="launchArchInstaller qemu-TUI"
 
     [" Arch linux; Gui"]="launchArch"
-    [" Arch linux; TUI"]="launchArch tui"
-
-
+    [" Arch linux; qemu-TUI"]="launchArch qemu-TUI"
 
     ["󱄅 NixOS installer; GUI"]="launchNixInstaller"
-    ["󱄅 NixOS installer; TUI"]="launchNixInstaller tui"
+    ["󱄅 NixOS installer; qemu-TUI"]="launchNixInstaller qemu-TUI"
 
     ["󱄅 NixOS; GUI"]="launchNix"
-    ["󱄅 NixOS; TUI"]="launchNix tui"
+    ["󱄅 NixOS; qemu-TUI"]="launchNix qemu-TUI"
 
 
     [" Alpine installer; GUI"]="launchAlpineInstaller"
-    [" Alpine installer; TUI"]="launchAlpineInstaller tui"
+    [" Alpine installer; qemu-TUI"]="launchAlpineInstaller qemu-TUI"
 
     [" Alpine; GUI"]="launchAlpine"
-    [" Alpine; TUI"]="launchAlpine tui"
+    [" Alpine; qemu-TUI"]="launchAlpine qemu-TUI"
 
 
     [" Gentoo installer; GUI"]="launchGentooInstaller"
-    [" Gentoo installer; TUI"]="launchGentooInstaller tui"
+    [" Gentoo installer; qemu-TUI"]="launchGentooInstaller qemu-TUI"
 
     [" Gentoo; GUI"]="launchGentoo"
-    [" Gentoo; TUI"]="launchGentoo tui"
+    [" Gentoo; qemu-TUI"]="launchGentoo qemu-TUI"
 
 
     [" Settings"]="changeQemuSettings "
