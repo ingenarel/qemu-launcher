@@ -170,27 +170,27 @@ installAlpineIso(){ # {{{
 launchAlpineInstaller(){ # {{{
     installAlpineIso
     createQemuImage "$storageDir/images/alpine-virt-latest-drive.img"
-    if [[ -z $1 || $1 == "gui" ]]; then
+    [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso"
-    elif [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]] && {
         launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso" "qemu-TUI"
-    fi
+    };}
 } # }}}
 
 launchAlpine(){ # {{{
-    if [[ ! -f "$storageDir/images/alpine-virt-latest-drive.img" ]] ; then
+    [[ ! -f "$storageDir/images/alpine-virt-latest-drive.img" ]] && {
         launchAlpineInstaller
         exit 0;
-    fi
-    if [[ -z $1 || $1 == "gui" ]]; then
+    }
+    [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/alpine-virt-latest-drive.img"
-    elif [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]] && {
         launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "" "qemu-TUI"
-    fi
+    };}
 } # }}}
 
 installGentooIso(){ # {{{
-    if [[ ! -f "$storageDir/isos/gentoo-latest.iso" ]] ; then
+    [[ ! -f "$storageDir/isos/gentoo-latest.iso" ]] && {
         echo "gentoo not found"
         wget\
             --no-use-server-timestamps\
@@ -205,33 +205,33 @@ installGentooIso(){ # {{{
 
         fileName=$(ls -t "$storageDir/isos" | head -n1)
         mv "$storageDir/isos/$fileName" "$storageDir/isos/gentoo-latest.iso"
-    fi
+    }
 } # }}}
 
 launchGentooInstaller(){ # {{{
     installGentooIso
     createQemuImage "$storageDir/images/gentoo-latest-drive.img"
-    if [[ -z $1 || $1 == "gui" ]]; then
+    [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso"
-    elif [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]] && {
         launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso" "qemu-TUI"
-    fi
+    };}
 } # }}}
 
 launchGentoo(){ # {{{
-    if [[ ! -f "$storageDir/images/gentoo-latest-drive.img" ]] ; then
+    [[ ! -f "$storageDir/images/gentoo-latest-drive.img" ]] && {
         launchGentooInstaller
         exit 0;
-    fi
-    if [[ -z $1 || $1 == "gui" ]];then
+    }
+    [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/gentoo-latest-drive.img"
-    elif [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]] && {
         launchQemu "$storageDir/images/gentoo-latest-drive.img" "" "qemu-TUI"
-    fi
+    };}
 } # }}}
 
 installNixIso(){ # {{{
-    if [[ ! -f "$storageDir/isos/nix-latest.iso" ]] ; then
+    [[ ! -f "$storageDir/isos/nix-latest.iso" ]] && {
         echo "nix not found"
         wget\
             --no-use-server-timestamps\
@@ -246,34 +246,34 @@ installNixIso(){ # {{{
 
         fileName=$(ls -t "$storageDir/isos" | head -n1)
         mv "$storageDir/isos/$fileName" "$storageDir/isos/nix-latest.iso"
-    fi
+    }
 } # }}}
 
 launchNixInstaller(){ # {{{
     installNixIso
     createQemuImage "$storageDir/images/nix-latest-drive.img"
-    if [[ -z $1 || $1 == "gui" ]]; then
+    [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso"
-    elif [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]] && {
         launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso" "qemu-TUI"
-    fi
+    };}
 } # }}}
 
 launchNix(){ # {{{
-    if [[ ! -f "$storageDir/images/nix-latest-drive.img" ]] ; then
+    [[ ! -f "$storageDir/images/nix-latest-drive.img" ]] && {
         launchNixInstaller
         exit 0;
-    fi
-    if [[ -z $1 || $1 == "gui" ]]; then
+    }
+    [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/nix-latest-drive.img"
-    elif [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]]; then
         launchQemu "$storageDir/images/nix-latest-drive.img" "" "qemu-TUI"
-    fi
+    };}
 } # }}}
 
 installArchIso(){ # {{{
     # https://geo.mirror.pkgbuild.com/iso/2025.05.01/archlinux-2025.05.01-x86_64.iso
-    if [[ ! -f "$storageDir/isos/arch-latest.iso" ]] ; then
+    [[ ! -f "$storageDir/isos/arch-latest.iso" ]] && {
         echo "arch not found"
         downloadLink="$(curl https://archlinux.org/download/ | grep -oE 'https://geo\.mirror\.pkgbuild\.com/iso/\S+/')"
         wget\
@@ -291,29 +291,29 @@ installArchIso(){ # {{{
 
         fileName=$(ls -t "$storageDir/isos" | head -n1)
         mv "$storageDir/isos/$fileName" "$storageDir/isos/arch-latest.iso"
-    fi
+    }
 } # }}}
 
 launchArchInstaller(){ # {{{
     installArchIso
     createQemuImage "$storageDir/images/arch-latest-drive.img"
-    if [[ -z $1 || $1 == "gui" ]]; then
+    [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso"
-    elif [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]]; then
         launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso" "qemu-TUI"
-    fi
+    };}
 } # }}}
 
 launchArch(){ # {{{
-    if [[ ! -f "$storageDir/images/arch-latest-drive.img" ]] ; then
+    [[ ! -f "$storageDir/images/arch-latest-drive.img" ]] && {
         launchArchInstaller
         exit 0;
-    fi
-    if [[ -z $1 || $1 == "gui" ]]; then
+    }
+    [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/arch-latest-drive.img"
-    elif [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]] && {
         launchQemu "$storageDir/images/arch-latest-drive.img" "" "qemu-TUI"
-    fi
+    };}
 } # }}}
 
 declare -A menusAndCommands=( # {{{
@@ -366,14 +366,14 @@ startQemu(){ # {{{
 
 while true; do # {{{
     startQemu "$@"
-    if [[ -n "$chosen" ]]; then
-        if [[ "$chosen" == " Settings" ]]; then
+    [[ -n "$chosen" ]] && {
+        [[ "$chosen" == " Settings" ]] && {
             changeQemuSettings
-        else
+        } || {
             eval "${menusAndCommands["$chosen"]}"
             exit 0
-        fi
-    else
+        }
+    } || {
         exit 0
-    fi
+    }
 done # }}}
