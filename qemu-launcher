@@ -91,21 +91,21 @@ launchQemu(){ #{{{
                 sed\
                     --quiet\
                     -E "s/^linux\s*(.)/\1/p"\
-                    /home/ingenarel/.local/share/qemu-launcher/mounts/arch-latest.iso/loader/entries/01-archiso-x86_64-linux.conf)\
+                    $mountDir/loader/entries/01-archiso-x86_64-linux.conf)\
             -initrd $mountDir$(
                 sed\
                     --quiet\
                     -E "s/^initrd\s*(.)/\1/p"\
-                    /home/ingenarel/.local/share/qemu-launcher/mounts/arch-latest.iso/loader/entries/01-archiso-x86_64-linux.conf)\
+                    $mountDir/loader/entries/01-archiso-x86_64-linux.conf)\
             -append '$(
                 sed\
                     --quiet\
                     -E "s/^options\s*(.)/\1/p"\
-                    /home/ingenarel/.local/share/qemu-launcher/mounts/arch-latest.iso/loader/entries/01-archiso-x86_64-linux.conf
+                    $mountDir/loader/entries/01-archiso-x86_64-linux.conf
                 ) console=ttyS0' -nographic"
         }
         eval "$executeCommand"
-        sudo -S umount "$mountDir"
+        # sudo -S umount "$mountDir"
     fi
 } #}}}
 
