@@ -7,6 +7,7 @@ storageDir="$HOME/.local/share/qemu-launcher"
 
 pickMenu(){ # {{{
     [[ -z $QEMU_LAUNCHER_MENU ]] && {
+        # shellcheck disable=SC2015
         [[ -n $WAYLAND_DISPLAY ]] && {
             command -v fuzzel >/dev/null 2>&1 && {
                 QEMU_LAUNCHER_MENU="fuzzel --dmenu"
@@ -26,23 +27,25 @@ pickMenu(){ # {{{
             }
         }
     }
-    eval "$QEMU_LAUNCHER_MENU" "$@"
+    eval "$QEMU_LAUNCHER_MENU $*"
 } # }}}
 
 maxRam="$(( $(grep --extended-regexp "MemTotal" /proc/meminfo | sed --expression='s/[^0-9]//g') / (1024 * 1024) ))" # {{{
 logialCores="$(grep -i --extended-regexp -c '^processor' /proc/cpuinfo)"
+# shellcheck disable=SC2034
 ramSize="$(( maxRam / 2 ))G"
+# shellcheck disable=SC2034
 cpuCores="$(( logialCores / 2 ))" # }}}
 
 changeQemuRam(){ # {{{
     echo "$(
         echo -en "$(
             for (( i = 1; i <= maxRam; i++)) do
-                echo -n $i "Gibibytes of RAM\n"
+                printf "%s Gibibytes of RAM\n" "$i"
             done
         )"\
         |
-        pickMenu "$@"\
+        pickMenu "$*"\
         |
         grep -oE '^[0-9]+'
     )G"
@@ -51,11 +54,11 @@ changeQemuRam(){ # {{{
 changeQemuCpu(){ # {{{
     echo -en "$(
         for (( i = 1; i <= logialCores; i++)) do
-            echo -n $i "core\n"
+            printf "%s core\n" "$i"
         done
     )"\
     |
-    pickMenu "$@"\
+    pickMenu "$*"\
     |
     grep -oE '^[0-9]+'
 } # }}}
@@ -83,8 +86,10 @@ launchQemu(){ #{{{
     #         eval "${executeCommand} -vga none -display none" & tmuxPaneOrTerminal "kitty" "$sshCommand"
     #     fi
     elif [[ $3 == "qemu-TUI" ]]; then
-        local mountDir="$storageDir/mounts/$(echo "$2" | grep -oE '[^/]+$')"
+        local mountDir
+        mountDir="$storageDir/mounts/$(echo "$2" | grep -oE '[^/]+$')"
         local password
+        # shellcheck disable=SC2015
         [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
             password="$(pickMenu --prompt="Password: ")"
             echo "$password" | sudo -S mount --onlyonce --mkdir "$2" "$mountDir"
@@ -92,43 +97,45 @@ launchQemu(){ #{{{
             sudo mount --onlyonce --mkdir "$2" "$mountDir"
         }
         [[ -n "$2" ]] && {
+            # shellcheck disable=SC2015
             echo "$2" | grep -E "arch" && {
                 executeCommand+=" -kernel $mountDir$(
                     sed\
                         --quiet\
                         -E "s/^linux\s*(.)/\1/p"\
-                        $mountDir/loader/entries/01-archiso-x86_64-linux.conf)\
+                        "$mountDir/loader/entries/01-archiso-x86_64-linux.conf")\
                 -initrd $mountDir$(
                     sed\
                         --quiet\
                         -E "s/^initrd\s*(.)/\1/p"\
-                        $mountDir/loader/entries/01-archiso-x86_64-linux.conf)\
+                        "$mountDir/loader/entries/01-archiso-x86_64-linux.conf")\
                 -append '$(
                     sed\
                         --quiet\
                         -E "s/^options\s*(.)/\1/p"\
-                        $mountDir/loader/entries/01-archiso-x86_64-linux.conf
+                        "$mountDir/loader/entries/01-archiso-x86_64-linux.conf"
                     ) console=ttyS0' -nographic"
             } || { echo "$2" | grep -E "gentoo" && {
                 executeCommand+=" -kernel $mountDir$(
                     sed\
                         --quiet\
                         -E "s/^\s*linux\s*(\S+).+/\1/p"\
-                        $mountDir/boot/grub/grub.cfg | head -n1)\
+                        "$mountDir/boot/grub/grub.cfg" | head -n1)\
                 -initrd $mountDir$(
                     sed\
                         --quiet\
                         -E "s/^\s*initrd\s*(.+)/\1/p"\
-                        $mountDir/boot/grub/grub.cfg | head -n1)\
+                        "$mountDir/boot/grub/grub.cfg" | head -n1)\
                 -append '$(
                     sed\
                         --quiet\
                         -E "s/^\s*linux\s*\S+\s*(.+)/\1/p"\
-                        $mountDir/boot/grub/grub.cfg | head -n1
+                        "$mountDir/boot/grub/grub.cfg" | head -n1
                     ) console=ttyS0' -nographic"
             };}
         }
         eval "$executeCommand"
+        # shellcheck disable=SC2015
         [[ "$QEMU_LAUNCHER_MENU" != "fzf" ]] && {
             sudo -S umount "$mountDir"
         } || {
@@ -142,14 +149,15 @@ declare -A settings=( # {{{
     [" Cpu"]="cpuCores=\"\$(changeQemuCpu)\""
 ) # }}}
 
+# shellcheck disable=SC2120
 changeQemuSettings(){ # {{{
     chosen="$(echo -en "$(
         for item in "${!settings[@]}"; do
-            echo -n "$item" "\n";
+            printf "%s \n" "$item"
         done
     )"\
     |
-        pickMenu "$@"\
+        pickMenu "$*"\
     |
         sed 's/.$//'
     )"
@@ -164,7 +172,7 @@ createQemuImage(){ # {{{
         qemu-img create -f qcow2 "$1" "$(
             echo -en "$(
                 for (( i = 1; i<= 30; i++))  do
-                    echo -n "$i G\n";
+                    printf "%s G\n" "$i"
                 done
             )"\
             |
@@ -195,9 +203,11 @@ installAlpineIso(){ # {{{
     fi
 } # }}}
 
+# shellcheck disable=SC2120
 launchAlpineInstaller(){ # {{{
     installAlpineIso
     createQemuImage "$storageDir/images/alpine-virt-latest-drive.img"
+    # shellcheck disable=SC2015
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso"
     } || { [[ $1 == "qemu-TUI" ]] && {
@@ -210,6 +220,7 @@ launchAlpine(){ # {{{
         launchAlpineInstaller
         exit 0;
     }
+    # shellcheck disable=SC2015
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/alpine-virt-latest-drive.img"
     } || { [[ $1 == "qemu-TUI" ]] && {
@@ -236,9 +247,11 @@ installGentooIso(){ # {{{
     }
 } # }}}
 
+# shellcheck disable=SC2120
 launchGentooInstaller(){ # {{{
     installGentooIso
     createQemuImage "$storageDir/images/gentoo-latest-drive.img"
+    # shellcheck disable=SC2015
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso"
     } || { [[ $1 == "qemu-TUI" ]] && {
@@ -251,6 +264,7 @@ launchGentoo(){ # {{{
         launchGentooInstaller
         exit 0;
     }
+    # shellcheck disable=SC2015
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/gentoo-latest-drive.img"
     } || { [[ $1 == "qemu-TUI" ]] && {
@@ -277,9 +291,11 @@ installNixIso(){ # {{{
     }
 } # }}}
 
+# shellcheck disable=SC2120
 launchNixInstaller(){ # {{{
     installNixIso
     createQemuImage "$storageDir/images/nix-latest-drive.img"
+    # shellcheck disable=SC2015
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso"
     } || { [[ $1 == "qemu-TUI" ]] && {
@@ -292,6 +308,7 @@ launchNix(){ # {{{
         launchNixInstaller
         exit 0;
     }
+    # shellcheck disable=SC2015
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/nix-latest-drive.img"
     } || { [[ $1 == "qemu-TUI" ]] && {
@@ -322,9 +339,11 @@ installArchIso(){ # {{{
     }
 } # }}}
 
+# shellcheck disable=SC2120
 launchArchInstaller(){ # {{{
     installArchIso
     createQemuImage "$storageDir/images/arch-latest-drive.img"
+    # shellcheck disable=SC2015
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso"
     } || { [[ $1 == "qemu-TUI" ]] && {
@@ -337,6 +356,7 @@ launchArch(){ # {{{
         launchArchInstaller
         exit 0;
     }
+    # shellcheck disable=SC2015
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/arch-latest-drive.img"
     } || { [[ $1 == "qemu-TUI" ]] && {
@@ -379,11 +399,11 @@ startQemu(){ # {{{
     chosen="$(
         echo -en "$(
             for item in "${!menusAndCommands[@]}"; do
-                echo -n "$item" "\n";
+                printf "%s \n" "$item"
             done
         )"\
         |
-        pickMenu "$@"\
+        pickMenu "$*"\
         |
         sed 's/.$//'
     )"
@@ -394,6 +414,7 @@ startQemu(){ # {{{
 
 while true; do # {{{
     startQemu "$@"
+    # shellcheck disable=SC2015
     [[ -n "$chosen" ]] && {
         [[ "$chosen" == " Settings" ]] && {
             changeQemuSettings
