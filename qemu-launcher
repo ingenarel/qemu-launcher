@@ -84,8 +84,13 @@ launchQemu(){ #{{{
     #     fi
     elif [[ $3 == "qemu-TUI" ]]; then
         local mountDir="$storageDir/mounts/$(echo "$2" | grep -oE '[^/]+$')"
-        local password="$(pickMenu --prompt="Password: ")"
-        echo "$password" | sudo -S mount --onlyonce --mkdir "$2" "$mountDir"
+        local password
+        [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
+            password="$(pickMenu --prompt="Password: ")"
+            echo "$password" | sudo -S mount --onlyonce --mkdir "$2" "$mountDir"
+        } || {
+            sudo mount --onlyonce --mkdir "$2" "$mountDir"
+        }
         [[ -n "$2" ]] && {
             echo "$2" | grep -E "arch" && {
                 executeCommand+=" -kernel $mountDir$(
@@ -124,7 +129,11 @@ launchQemu(){ #{{{
             };}
         }
         eval "$executeCommand"
-        sudo -S umount "$mountDir"
+        [[ "$QEMU_LAUNCHER_MENU" != "fzf" ]] && {
+            sudo -S umount "$mountDir"
+        } || {
+            sudo umount "$mountDir"
+        }
     fi
 } #}}}
 
