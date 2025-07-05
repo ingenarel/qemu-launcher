@@ -103,9 +103,26 @@ launchQemu(){ #{{{
                     -E "s/^options\s*(.)/\1/p"\
                     $mountDir/loader/entries/01-archiso-x86_64-linux.conf
                 ) console=ttyS0' -nographic"
-        }
+        } || { echo "$2" | grep -E "gentoo" && {
+            executeCommand+=" -kernel $mountDir$(
+                sed\
+                    --quiet\
+                    -E "s/^\s*linux\s*(\S+).+/\1/p"\
+                    $mountDir/boot/grub/grub.cfg | head -n1)\
+            -initrd $mountDir$(
+                sed\
+                    --quiet\
+                    -E "s/^\s*initrd\s*(.+)/\1/p"\
+                    $mountDir/boot/grub/grub.cfg | head -n1)\
+            -append '$(
+                sed\
+                    --quiet\
+                    -E "s/^\s*linux\s*\S+\s*(.+)/\1/p"\
+                    $mountDir/boot/grub/grub.cfg | head -n1
+                ) console=ttyS0' -nographic"
+        };}
         eval "$executeCommand"
-        # sudo -S umount "$mountDir"
+        sudo -S umount "$mountDir"
     fi
 } #}}}
 
