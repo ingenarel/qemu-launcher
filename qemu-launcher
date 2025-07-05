@@ -29,10 +29,10 @@ pickMenu(){ # {{{
     eval "$QEMU_LAUNCHER_MENU" "$@"
 } # }}}
 
-maxRam="$(( $(grep --extended-regexp "MemTotal" /proc/meminfo | sed --expression='s/[^0-9]//g') / (1024 * 1024) ))"
+maxRam="$(( $(grep --extended-regexp "MemTotal" /proc/meminfo | sed --expression='s/[^0-9]//g') / (1024 * 1024) ))" # {{{
 logialCores="$(grep -i --extended-regexp -c '^processor' /proc/cpuinfo)"
 ramSize="$(( maxRam / 2 ))G"
-cpuCores="$(( logialCores / 2 ))"
+cpuCores="$(( logialCores / 2 ))" # }}}
 
 changeQemuRam(){ # {{{
     echo "$(
@@ -266,7 +266,7 @@ launchNix(){ # {{{
     }
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/nix-latest-drive.img"
-    } || { [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]] && {
         launchQemu "$storageDir/images/nix-latest-drive.img" "" "qemu-TUI"
     };}
 } # }}}
@@ -299,7 +299,7 @@ launchArchInstaller(){ # {{{
     createQemuImage "$storageDir/images/arch-latest-drive.img"
     [[ -z $1 || $1 == "gui" ]] && {
         launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso"
-    } || { [[ $1 == "qemu-TUI" ]]; then
+    } || { [[ $1 == "qemu-TUI" ]] && {
         launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso" "qemu-TUI"
     };}
 } # }}}
