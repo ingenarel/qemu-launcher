@@ -40,9 +40,9 @@ checkLatestFile(){
 maxRam="$(( $(grep --extended-regexp "MemTotal" /proc/meminfo | sed --expression='s/[^0-9]//g') / (1024 * 1024) ))" # {{{
 logialCores="$(grep -i --extended-regexp -c '^processor' /proc/cpuinfo)"
 # shellcheck disable=SC2034
-ramSize="$(( maxRam / 2 ))G"
+[[ -z "$QEMU_RAM_SIZE" ]] && QEMU_RAM_SIZE="$(( maxRam / 2 ))G"
 # shellcheck disable=SC2034
-cpuCores="$(( logialCores / 2 ))" # }}}
+[[ -z "$QEMU_CPU_CORES" ]] && QEMU_CPU_CORES="$(( logialCores / 2 ))" # }}}
 
 changeQemuRam(){ # {{{
     echo "$(
@@ -74,9 +74,9 @@ launchQemu(){ #{{{
     qemuHostPort="10022"
     executeCommand="qemu-system-x86_64\
         -enable-kvm\
-        -m \"\$ramSize\"\
+        -m \"\$QEMU_RAM_SIZE\"\
         -cpu host\
-        -smp \"\$cpuCores\"\
+        -smp \"\$QEMU_CPU_CORES\"\
         -net nic\
         -net user,hostfwd=tcp::$qemuHostPort-:22\
         -drive file=\"\$1\""
@@ -170,8 +170,8 @@ launchQemu(){ #{{{
 } #}}}
 
 declare -A settings=( # {{{
-    [" Memory"]="ramSize=\"\$(changeQemuRam)\""
-    [" Cpu"]="cpuCores=\"\$(changeQemuCpu)\""
+    [" Memory"]="QEMU_RAM_SIZE=\"\$(changeQemuRam)\""
+    [" Cpu"]="QEMU_CPU_CORES=\"\$(changeQemuCpu)\""
 ) # }}}
 
 # shellcheck disable=SC2120
