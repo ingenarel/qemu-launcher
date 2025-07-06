@@ -5,28 +5,29 @@ storageDir="$HOME/.local/share/qemu-launcher"
 
 #@formatter:off
 
-pickMenu(){ # {{{
-    [[ -z $QEMU_LAUNCHER_MENU ]] && {
-        # shellcheck disable=SC2015
-        [[ -n $WAYLAND_DISPLAY ]] && {
-            command -v fuzzel >/dev/null 2>&1 && {
-                QEMU_LAUNCHER_MENU="fuzzel --dmenu"
-            } || {
-            command -v tofi >/dev/null 2>&1 && {
-                QEMU_LAUNCHER_MENU="tofi"
-            } || {
-            command -v rofi >/dev/null 2>&1 && {
-                QEMU_LAUNCHER_MENU="rofi"
-            } || {
-            command - wofi >/dev/null 2>&1 && {
-                QEMU_LAUNCHER_MENU="wofi"
-            }; }; }; }
+[[ -z $QEMU_LAUNCHER_MENU ]] && {
+    # shellcheck disable=SC2015
+    [[ -n $WAYLAND_DISPLAY ]] && {
+        command -v fuzzel >/dev/null 2>&1 && {
+            QEMU_LAUNCHER_MENU="fuzzel --dmenu"
         } || {
-            command -v fzf >/dev/null 2>&1 && {
-                QEMU_LAUNCHER_MENU="fzf"
-            }
+        command -v tofi >/dev/null 2>&1 && {
+            QEMU_LAUNCHER_MENU="tofi"
+        } || {
+        command -v rofi >/dev/null 2>&1 && {
+            QEMU_LAUNCHER_MENU="rofi"
+        } || {
+        command - wofi >/dev/null 2>&1 && {
+            QEMU_LAUNCHER_MENU="wofi"
+        }; }; }; }
+    } || {
+        command -v fzf >/dev/null 2>&1 && {
+            QEMU_LAUNCHER_MENU="fzf"
         }
     }
+}
+
+pickMenu(){ # {{{
     eval "$QEMU_LAUNCHER_MENU $*"
 } # }}}
 
@@ -138,8 +139,26 @@ launchQemu(){ #{{{
                         -E "s/^\s*linux\s*\S+\s*(.+)/\1/p"\
                         "$mountDir/boot/grub/grub.cfg" | head -n1
                     ) console=ttyS0' -nographic"
-            };}
+            } || { echo "$2" | grep -E "nix" && {
+                executeCommand+=" -kernel $mountDir$(
+                    sed\
+                        --quiet\
+                        -E "s/^LINUX\s*(.+)/\1/p"\
+                        "$mountDir/isolinux/isolinux.cfg" | head -n1)\
+                -initrd $mountDir$(
+                    sed\
+                        --quiet\
+                        -E "s/^\s*INITRD\s*(.+)/\1/p"\
+                        "$mountDir/isolinux/isolinux.cfg" | head -n1)\
+                -append '$(
+                    sed\
+                        --quiet\
+                        -E "s/^\s*APPEND\s*\S+\s*(.+)/\1/p"\
+                        "$mountDir/isolinux/isolinux.cfg" | head -n1
+                    ) console=ttyS0' -nographic"
+            };};}
         }
+        eval "echo \"$executeCommand\""
         eval "$executeCommand"
         # shellcheck disable=SC2015
         [[ "$QEMU_LAUNCHER_MENU" != "fzf" ]] && {
