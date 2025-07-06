@@ -30,6 +30,12 @@ pickMenu(){ # {{{
     eval "$QEMU_LAUNCHER_MENU $*"
 } # }}}
 
+checkLatestFile(){
+    local dirName; dirName="$1"
+    [[ "${dirName:(-1)}" != "/" ]] && dirName+="/"
+    find "$dirName" -follow -type f -printf "%T@ %p\n" | sort | tail -n1 | cut -d ' ' '-f2-'
+}
+
 maxRam="$(( $(grep --extended-regexp "MemTotal" /proc/meminfo | sed --expression='s/[^0-9]//g') / (1024 * 1024) ))" # {{{
 logialCores="$(grep -i --extended-regexp -c '^processor' /proc/cpuinfo)"
 # shellcheck disable=SC2034
@@ -198,8 +204,8 @@ installAlpineIso(){ # {{{
                 sed -E 's/.+href="//; s/".+//; s/\&#x2F;/\//g'
             )"
 
-        fileName=$(ls -t "$storageDir/isos" | head -n1)
-        mv "$storageDir/isos/$fileName" "$storageDir/isos/alpine-virt-latest.iso"
+        fileName="$(checkLatestFile "$storageDir/isos")"
+        mv "$fileName" "$storageDir/isos/alpine-virt-latest.iso"
     fi
 } # }}}
 
@@ -242,8 +248,8 @@ installGentooIso(){ # {{{
                 head -n1
             )"
 
-        fileName=$(ls -t "$storageDir/isos" | head -n1)
-        mv "$storageDir/isos/$fileName" "$storageDir/isos/gentoo-latest.iso"
+        fileName="$(checkLatestFile "$storageDir/isos")"
+        mv "$fileName" "$storageDir/isos/gentoo-latest.iso"
     }
 } # }}}
 
@@ -286,8 +292,8 @@ installNixIso(){ # {{{
                 head -n1
             )"
 
-        fileName=$(ls -t "$storageDir/isos" | head -n1)
-        mv "$storageDir/isos/$fileName" "$storageDir/isos/nix-latest.iso"
+        fileName="$(checkLatestFile "$storageDir/isos")"
+        mv "$fileName" "$storageDir/isos/nix-latest.iso"
     }
 } # }}}
 
@@ -334,8 +340,8 @@ installArchIso(){ # {{{
                 sed -E 's/".+//'
             )"
 
-        fileName=$(ls -t "$storageDir/isos" | head -n1)
-        mv "$storageDir/isos/$fileName" "$storageDir/isos/arch-latest.iso"
+        fileName="$(checkLatestFile "$storageDir/isos")"
+        mv "$fileName" "$storageDir/isos/arch-latest.iso"
     }
 } # }}}
 
