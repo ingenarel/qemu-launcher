@@ -212,7 +212,7 @@ launchQemu(){ #{{{
         }
         [[ -z "$2" ]] || {
             rm "${1}.backup"
-            qemu-nbd --disconnect "$openNBD"
+            sudo qemu-nbd --disconnect "$openNBD"
         }
     fi
 } #}}}
