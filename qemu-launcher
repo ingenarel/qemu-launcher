@@ -171,8 +171,6 @@ launchQemu(){ #{{{
                     lsblk -no PATH,TYPE "$openNBD" | sed -nE 's/^(\S+)\s+part/\1/p'\
                     |
                     pickMenu "$*"\
-                    |
-                    sed 's/.$//'
                 )"
                 [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
                     password="$(pickMenu --prompt="Password: ")"
