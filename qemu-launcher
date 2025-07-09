@@ -164,7 +164,7 @@ launchQemu(){ #{{{
             echo "$1" | grep -E 'gentoo' && {
                 lsmod | grep -q 'nbd' || sudo modprobe nbd
                 local openNBD
-                openNBD="$(lsblk -no PATH,MOUNTPOINT /dev/nbd* | sed -E '/^(\S+)\s+(\S+)/d' | head -n1)"
+                openNBD="$(lsblk -no PATH,MOUNTPOINT /dev/nbd* | sed -E '/^(\S+)\s+(\S+)/d' | head -n1 | grep -oE '^/S+')"
                 sudo qemu-nbd --connect="$openNBD" "$1"
                 local partition
                 partition="$(
