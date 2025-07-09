@@ -214,10 +214,10 @@ launchQemu(){ #{{{
                         "$mountDir/boot/grub/grub.cfg" | head -n1
                     ) console=ttyS0'"
                 diff -q "$storageDir/kernels/$1-default-kernel" "$imgKernelpath" || {
-                    cp "$imgKernelpath" "$storageDir/kernels/$1-default-kernel"
+                    cp "$imgKernelpath" "$storageDir/kernels/gentoo-latest-default-kernel"
                 }
                 diff -q "$storageDir/kernels/$1-default-initrd" "$imgInitRDpath" || {
-                    cp "$imgInitRDpath" "$storageDir/initrds/$1-default-initrd"
+                    cp "$imgInitRDpath" "$storageDir/initrds/gentoo-latest-default-initrd"
                 }
                 [[ "$QEMU_LAUNCHER_MENU" != "fzf" ]] && {
                     sudo -S umount "$mountDir"
@@ -242,7 +242,6 @@ launchQemu(){ #{{{
             sudo umount "$mountDir"
         }
         [[ -z "$2" ]] || {
-            rm "${1}.backup"
             [[ $QEMU_DEBUG == true ]] && echo "|QEMU_DEBUG|\$openNBD|'$openNBD'"
             sudo qemu-nbd --disconnect "$openNBD"
         }
