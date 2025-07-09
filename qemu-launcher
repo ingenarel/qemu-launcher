@@ -168,7 +168,7 @@ launchQemu(){ #{{{
                 sudo qemu-nbd --connect="$openNBD" "$1"
                 local partition
                 partition="$(
-                    lsblk -no PATH,TYPE /dev/nbd0 | sed -nE 's/^(\S+)\s+part/\1/p'\
+                    lsblk -no PATH,TYPE "$openNBD" | sed -nE 's/^(\S+)\s+part/\1/p'\
                     |
                     pickMenu "$*"\
                     |
