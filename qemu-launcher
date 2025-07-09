@@ -167,12 +167,13 @@ launchQemu(){ #{{{
                     ) console=ttyS0' -nographic"
             };};}
         } || {
+            [[ -d "$storageDir/kernels" ]] && mkdir --parents "$storageDir/kernels"
+            [[ -d "$storageDir/initrds" ]] && mkdir --parents "$storageDir/initrds"
             echo "$1" | grep -E 'gentoo' && {
                 lsmod | grep -q 'nbd' || sudo modprobe nbd
-                qemu-img create -f qcow2 -F qcow2 -b "$1" "${1}.backup"
                 openNBD="$(lsblk -no PATH,MOUNTPOINT /dev/nbd* | sed -E '/^(\S+)\s+(\S+)/d' | head -n1 | grep -oE '^\S+')"
                 [[ $QEMU_DEBUG == true ]] && echo "|QEMU_DEBUG|\$openNBD|'$openNBD'"
-                sudo qemu-nbd --read-only --connect="$openNBD" "${1}.backup"
+                sudo qemu-nbd --read-only --connect="$openNBD" "$1"
                 local partitions
                 partitions="$( lsblk -no PATH,TYPE "$openNBD" | sed -nE 's/^(\S+)\s+part/\1/p')"
                 local numberOfParitions
@@ -194,19 +195,38 @@ launchQemu(){ #{{{
                 } || {
                     sudo mount --read-only --onlyonce --mkdir "$partition" "$mountDir"
                 }
-                executeCommand+=" -kernel $mountDir$(
+                local imgKernelpath
+                imgKernelpath="$mountDir$(
                     sudo sed\
                         -nE 's/^\s*linux\s*(\S+).+/\1/p'\
-                        "$mountDir/boot/grub/grub.cfg" | head -n1)\
-                -initrd $mountDir$(
+                        "$mountDir/boot/grub/grub.cfg" | head -n1
+                    )"
+                local imgInitRDpath
+                imgInitRDpath="$mountDir$(
                     sudo sed\
                         -nE 's/^\s*initrd\s*(.+)/\1/p'\
-                        "$mountDir/boot/grub/grub.cfg" | head -n1)\
-                -append '$(
+                        "$mountDir/boot/grub/grub.cfg" | head -n1
+                    )"
+                local kernelArgs
+                kernelArgs="'$(
                     sudo sed\
                         -nE 's/^\s*linux\s*\S+\s+(.+)/\1/p'\
                         "$mountDir/boot/grub/grub.cfg" | head -n1
-                    ) console=ttyS0' -nographic"
+                    ) console=ttyS0'"
+                diff -q "$storageDir/kernels/$1-default-kernel" "$imgKernelpath" || {
+                    cp "$imgKernelpath" "$storageDir/kernels/$1-default-kernel"
+                }
+                diff -q "$storageDir/kernels/$1-default-initrd" "$imgInitRDpath" || {
+                    cp "$imgInitRDpath" "$storageDir/initrds/$1-default-initrd"
+                }
+                [[ "$QEMU_LAUNCHER_MENU" != "fzf" ]] && {
+                    sudo -S umount "$mountDir"
+                } || {
+                    sudo umount "$mountDir"
+                }
+                executeCommand+=" -kernel $storageDir/kernels/$1-default-kernel\
+                    -initrd $storageDir/initrds/$1-default-initrd\
+                    -append $kernelArgs -nographic"
             }
         } || {
             echo "This distro currently isn't supported for manual booting."
