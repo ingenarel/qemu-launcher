@@ -213,10 +213,10 @@ launchQemu(){ #{{{
                         -nE 's/^\s*linux\s*\S+\s+(.+)/\1/p'\
                         "$mountDir/boot/grub/grub.cfg" | head -n1
                     ) console=ttyS0'"
-                diff -q "$storageDir/kernels/$1-default-kernel" "$imgKernelpath" || {
+                diff -q "$storageDir/kernels/gentoo-latest-default-kernel" "$imgKernelpath" || {
                     cp "$imgKernelpath" "$storageDir/kernels/gentoo-latest-default-kernel"
                 }
-                diff -q "$storageDir/kernels/$1-default-initrd" "$imgInitRDpath" || {
+                diff -q "$storageDir/kernels/gentoo-latest-default-initrd" "$imgInitRDpath" || {
                     cp "$imgInitRDpath" "$storageDir/initrds/gentoo-latest-default-initrd"
                 }
                 [[ "$QEMU_LAUNCHER_MENU" != "fzf" ]] && {
@@ -224,8 +224,8 @@ launchQemu(){ #{{{
                 } || {
                     sudo umount "$mountDir"
                 }
-                executeCommand+=" -kernel $storageDir/kernels/$1-default-kernel\
-                    -initrd $storageDir/initrds/$1-default-initrd\
+                executeCommand+=" -kernel $storageDir/kernels/gentoo-latest-default-kernel\
+                    -initrd $storageDir/initrds/gentoo-latest-default-initrd\
                     -append $kernelArgs -nographic"
             }
         } || {
