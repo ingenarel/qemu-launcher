@@ -160,6 +160,44 @@ launchQemu(){ #{{{
                         "$mountDir/isolinux/isolinux.cfg" | head -n1
                     ) console=ttyS0' -nographic"
             };};}
+        } || {
+            echo "$1" | grep -E 'gentoo' && {
+                lsmod | grep -q 'nbd' || sudo modprobe nbd
+                local openNBD
+                openNBD="$(lsblk -no PATH,MOUNTPOINT /dev/nbd* | sed -E '/^(\S+)\s+(\S+)/d' | head -n1)"
+                sudo qemu-nbd --connect="$openNBD" "$1"
+                local partition
+                partition="$(
+                    lsblk -no PATH,TYPE /dev/nbd0 | sed -nE 's/^(\S+)\s+part/\1/p'\
+                    |
+                    pickMenu "$*"\
+                    |
+                    sed 's/.$//'
+                )"
+                [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
+                    password="$(pickMenu --prompt="Password: ")"
+                    echo "$password" | sudo -S mount --onlyonce --mkdir "$partition" "$mountDir"
+                } || {
+                    sudo mount --onlyonce --mkdir "$partition" "$mountDir"
+                }
+                executeCommand+=" -kernel $mountDir$(
+                    sudo sed\
+                        -nE 's/^\s*linux\s*(\S+).+/\1/p'\
+                        "$mountDir/boot/grub/grub.cfg" | head -n1)\
+                -initrd $mountDir$(
+                    sudo sed\
+                        -nE 's/^\s*initrd\s*(.+)/\1/p'\
+                        "$mountDir/boot/grub/grub.cfg" | head -n1)\
+                -append '$(
+                    sudo sed\
+                        -nE 's/^\s*linux\s*\S+\s+(.+)/\1/p'\
+                        "$mountDir/boot/grub/grub.cfg" | head -n1
+                    ) console=ttyS0' -nographic"
+            }
+        } || {
+            echo "This distro currently isn't supported for manual booting."
+            echo "Which is needed for appending some kernel args so everything works properly"
+            exit 0
         }
         eval "echo \"$executeCommand\""
         eval "$executeCommand"
