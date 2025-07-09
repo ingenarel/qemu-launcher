@@ -446,6 +446,7 @@ while true; do # {{{
     [[ -n "$chosen" ]] && {
         [[ "$chosen" == " Settings" ]] && {
             changeQemuSettings
+            continue
         } || {
             eval "${menusAndCommands["$chosen"]}"
             exit 0
