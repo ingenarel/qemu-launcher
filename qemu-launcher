@@ -214,7 +214,7 @@ launchQemu(){ #{{{
             exit 0
         }
         eval "echo \"$executeCommand\""
-        [[ $QEMU_DEBUG == true ]] && eval "printf '%s' \"$executeCommand\""
+        [[ $QEMU_DEBUG == true ]] && eval "echo -en \"$executeCommand\""
         # shellcheck disable=SC2015
         [[ "$QEMU_LAUNCHER_MENU" != "fzf" ]] && {
             sudo -S umount "$mountDir"
