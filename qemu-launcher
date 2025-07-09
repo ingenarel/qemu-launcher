@@ -103,9 +103,9 @@ launchQemu(){ #{{{
         [[ -n "$2" ]] && {
             [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
                 password="$(pickMenu --prompt="Password: ")"
-                echo "$password" | sudo -S mount --onlyonce --mkdir "$2" "$mountDir"
+                echo "$password" | sudo -S mount --read-only --onlyonce --mkdir "$2" "$mountDir"
             } || {
-                sudo mount --onlyonce --mkdir "$2" "$mountDir"
+                sudo mount --read-only --onlyonce --mkdir "$2" "$mountDir"
             }
             # shellcheck disable=SC2015
             echo "$2" | grep -E "arch" && {
@@ -165,7 +165,7 @@ launchQemu(){ #{{{
                 lsmod | grep -q 'nbd' || sudo modprobe nbd
                 local openNBD
                 openNBD="$(lsblk -no PATH,MOUNTPOINT /dev/nbd* | sed -E '/^(\S+)\s+(\S+)/d' | head -n1 | grep -oE '^\S+')"
-                sudo qemu-nbd --connect="$openNBD" "$1"
+                sudo qemu-nbd --read-only --connect="$openNBD" "$1"
                 local partition
                 partition="$(
                     lsblk -no PATH,TYPE "$openNBD" | sed -nE 's/^(\S+)\s+part/\1/p'\
@@ -174,9 +174,9 @@ launchQemu(){ #{{{
                 )"
                 [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
                     password="$(pickMenu --prompt="Password: ")"
-                    echo "$password" | sudo -S mount --onlyonce --mkdir "$partition" "$mountDir"
+                    echo "$password" | sudo -S mount --read-only --onlyonce --mkdir "$partition" "$mountDir"
                 } || {
-                    sudo mount --onlyonce --mkdir "$partition" "$mountDir"
+                    sudo mount --read-only --onlyonce --mkdir "$partition" "$mountDir"
                 }
                 executeCommand+=" -kernel $mountDir$(
                     sudo sed\
