@@ -102,6 +102,7 @@ launchQemu(){ #{{{
         } || {
             mountDir="$storageDir/mounts/$(echo "$1" | grep -oE '[^/]+$')"
         }
+        [[ $QEMU_DEBUG == true ]] && echo "$mountDir"
         local password
         # shellcheck disable=SC2015
         [[ -n "$2" ]] && {
@@ -170,6 +171,7 @@ launchQemu(){ #{{{
                 qemu-img create -f qcow2 -F qcow2 -b "$1" "${1}.backup"
                 local openNBD
                 openNBD="$(lsblk -no PATH,MOUNTPOINT /dev/nbd* | sed -E '/^(\S+)\s+(\S+)/d' | head -n1 | grep -oE '^\S+')"
+                [[ $QEMU_DEBUG == true ]] && echo "$openNBD"
                 sudo qemu-nbd --read-only --connect="$openNBD" "${1}.backup"
                 local partition
                 partition="$(
@@ -177,6 +179,7 @@ launchQemu(){ #{{{
                     |
                     pickMenu\
                 )"
+                [[ $QEMU_DEBUG == true ]] && echo "$partition"
                 [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
                     password="$(pickMenu --prompt="Password: ")"
                     echo "$password" | sudo -S mount --read-only --onlyonce --mkdir "$partition" "$mountDir"
