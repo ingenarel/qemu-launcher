@@ -224,6 +224,7 @@ launchQemu(){ #{{{
                 } || {
                     sudo umount "$mountDir"
                 }
+                sudo qemu-nbd --disconnect "$openNBD"
                 executeCommand+=" -kernel $storageDir/kernels/gentoo-latest-default-kernel\
                     -initrd $storageDir/initrds/gentoo-latest-default-initrd\
                     -append $kernelArgs -nographic"
@@ -240,10 +241,6 @@ launchQemu(){ #{{{
             sudo -S umount "$mountDir"
         } || {
             sudo umount "$mountDir"
-        }
-        [[ -z "$2" ]] || {
-            [[ $QEMU_DEBUG == true ]] && echo "|QEMU_DEBUG|\$openNBD|'$openNBD'"
-            sudo qemu-nbd --disconnect "$openNBD"
         }
     fi
 } #}}}
