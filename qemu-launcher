@@ -17,7 +17,7 @@ storageDir="$HOME/.local/share/qemu-launcher"
         command -v rofi >/dev/null 2>&1 && {
             QEMU_LAUNCHER_MENU="rofi"
         } || {
-        command - wofi >/dev/null 2>&1 && {
+        command -v wofi >/dev/null 2>&1 && {
             QEMU_LAUNCHER_MENU="wofi"
         }; }; }; }
     } || {
