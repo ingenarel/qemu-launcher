@@ -100,13 +100,13 @@ launchQemu(){ #{{{
         mountDir="$storageDir/mounts/$(echo "$2" | grep -oE '[^/]+$')"
         local password
         # shellcheck disable=SC2015
-        [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
-            password="$(pickMenu --prompt="Password: ")"
-            echo "$password" | sudo -S mount --onlyonce --mkdir "$2" "$mountDir"
-        } || {
-            sudo mount --onlyonce --mkdir "$2" "$mountDir"
-        }
         [[ -n "$2" ]] && {
+            [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
+                password="$(pickMenu --prompt="Password: ")"
+                echo "$password" | sudo -S mount --onlyonce --mkdir "$2" "$mountDir"
+            } || {
+                sudo mount --onlyonce --mkdir "$2" "$mountDir"
+            }
             # shellcheck disable=SC2015
             echo "$2" | grep -E "arch" && {
                 executeCommand+=" -kernel $mountDir$(
