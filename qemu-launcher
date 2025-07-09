@@ -24,6 +24,9 @@ storageDir="$HOME/.local/share/qemu-launcher"
         command -v fzf >/dev/null 2>&1 && {
             QEMU_LAUNCHER_MENU="fzf"
         }
+    } || {
+        echo "Proper Menu not found! fuzzel|tofi|rofi|wofi|fzf"
+        exit 1
     }
 }
 
