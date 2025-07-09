@@ -210,7 +210,10 @@ launchQemu(){ #{{{
         } || {
             sudo umount "$mountDir"
         }
-        [[ -z "$2" ]] || rm "${1}.backup"
+        [[ -z "$2" ]] || {
+            rm "${1}.backup"
+            qemu-nbd --disconnect "$openNBD"
+        }
     fi
 } #}}}
 
