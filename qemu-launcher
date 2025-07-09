@@ -173,12 +173,20 @@ launchQemu(){ #{{{
                 openNBD="$(lsblk -no PATH,MOUNTPOINT /dev/nbd* | sed -E '/^(\S+)\s+(\S+)/d' | head -n1 | grep -oE '^\S+')"
                 [[ $QEMU_DEBUG == true ]] && echo "|QEMU_DEBUG|\$openNBD|'$openNBD'"
                 sudo qemu-nbd --read-only --connect="$openNBD" "${1}.backup"
-                local partition
-                partition="$(
-                    lsblk -no PATH,TYPE "$openNBD" | sed -nE 's/^(\S+)\s+part/\1/p'\
-                    |
-                    pickMenu\
-                )"
+                local partitions
+                partitions="$( lsblk -no PATH,TYPE "$openNBD" | sed -nE 's/^(\S+)\s+part/\1/p')"
+                local numberOfParitions
+                numberOfParitions="$(printf "%s\n" "$partitions" | wc -l)"
+                [[ "$numberOfParitions" -gt 1 ]] && {
+                    partition="$(printf "%s\n" "$partitions" | pickMenu )"
+                } || {
+                    [[ $numberOfParitions == 1 ]] && {
+                        partition="$partitions"
+                    } || {
+                        echo "no partition found"
+                        exit 1
+                    }
+                }
                 [[ $QEMU_DEBUG == true ]] && echo "|QEMU_DEBUG|\$partition|'$partition'"
                 [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
                     password="$(pickMenu --prompt="Password: ")"
