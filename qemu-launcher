@@ -105,6 +105,7 @@ launchQemu(){ #{{{
         [[ $QEMU_DEBUG == true ]] && echo "|QEMU_DEBUG|\$mountDir|'$mountDir'"
         local password
         # shellcheck disable=SC2015
+        local openNBD
         [[ -n "$2" ]] && {
             [[ $QEMU_LAUNCHER_MENU != "fzf" ]] && {
                 password="$(pickMenu --prompt="Password: ")"
@@ -169,7 +170,6 @@ launchQemu(){ #{{{
             echo "$1" | grep -E 'gentoo' && {
                 lsmod | grep -q 'nbd' || sudo modprobe nbd
                 qemu-img create -f qcow2 -F qcow2 -b "$1" "${1}.backup"
-                local openNBD
                 openNBD="$(lsblk -no PATH,MOUNTPOINT /dev/nbd* | sed -E '/^(\S+)\s+(\S+)/d' | head -n1 | grep -oE '^\S+')"
                 [[ $QEMU_DEBUG == true ]] && echo "|QEMU_DEBUG|\$openNBD|'$openNBD'"
                 sudo qemu-nbd --read-only --connect="$openNBD" "${1}.backup"
