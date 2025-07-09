@@ -97,7 +97,11 @@ launchQemu(){ #{{{
     #     fi
     elif [[ $3 == "qemu-TUI" ]]; then
         local mountDir
-        mountDir="$storageDir/mounts/$(echo "$2" | grep -oE '[^/]+$')"
+        [[ -n "$2" ]] && {
+            mountDir="$storageDir/mounts/$(echo "$2" | grep -oE '[^/]+$')"
+        } || {
+            mountDir="$storageDir/mounts/$(echo "$1" | grep -oE '[^/]+$')"
+        }
         local password
         # shellcheck disable=SC2015
         [[ -n "$2" ]] && {
