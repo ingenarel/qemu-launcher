@@ -242,6 +242,7 @@ launchQemu(){ #{{{
         # shellcheck disable=SC2015
         if [[ -z "$2" ]]; then
             [[ -d "$storageDir/ssh" ]] || mkdir --parents "$storageDir/ssh"
+            [[ $QEMU_DEBUG == true ]] && eval "echo -en \"$executeCommand\""
             eval "$executeCommand -vga none -display none" >> "$storageDir/log.txt" 2>&1\
             & {
                 sleep 5
