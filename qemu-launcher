@@ -30,6 +30,8 @@ storageDir="$HOME/.local/share/qemu-launcher"
     }
 } # }}}
 
+[[ -z "$QEMU_USER" ]] && QEMU_USER="$USER"
+
 pickMenu(){ # {{{
     eval "$QEMU_LAUNCHER_MENU $*"
 } # }}}
@@ -242,7 +244,7 @@ launchQemu(){ #{{{
             [[ -d "$storageDir/ssh" ]] || mkdir --parents "$storageDir/ssh"
             eval "$executeCommand -vga none -display none" >> "$storageDir/log.txt" 2>&1\
             &
-            ssh -o UserKnownHostsFile="$storageDir/ssh/$1" "$USER@localhost" -p "$qemuHostPort"
+            ssh -o UserKnownHostsFile="$storageDir/ssh/$(echo "$1" | grep -oE '[^/]+')" "$QEMU_USER@localhost" -p "$qemuHostPort"
         } || {
             echo "sshing into an iso is currently unsupported at the moment"
             exit 0
