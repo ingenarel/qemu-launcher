@@ -240,18 +240,19 @@ launchQemu(){ #{{{
         }
     elif [[ "$3" == "ssh" ]]; then
         # shellcheck disable=SC2015
-        if [[ -z "$2" ]]; then
+        [[ -z "$2" ]] && {
             [[ -d "$storageDir/ssh" ]] || mkdir --parents "$storageDir/ssh"
             [[ $QEMU_DEBUG == true ]] && eval "echo -en \"$executeCommand\""
             eval "$executeCommand -vga none -display none" >> "$storageDir/log.txt" 2>&1\
             & {
                 sleep 5
                 ssh -o UserKnownHostsFile="$storageDir/ssh/$(echo "$1" | grep -oE '[^/]+')" "$QEMU_USER@localhost" -p "$qemuHostPort"
+                exit 0
             }
-        else
+        } || {
             echo "sshing into an iso is currently unsupported at the moment"
             exit 0
-        fi
+        }
     fi
 } #}}}
 
