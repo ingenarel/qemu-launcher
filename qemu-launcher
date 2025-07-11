@@ -5,7 +5,7 @@ storageDir="$HOME/.local/share/qemu-launcher"
 
 #@formatter:off
 
-[[ -z $QEMU_LAUNCHER_MENU ]] && {
+[[ -z $QEMU_LAUNCHER_MENU ]] && { # {{{
     # shellcheck disable=SC2015
     [[ -n $WAYLAND_DISPLAY ]] && {
         command -v fuzzel >/dev/null 2>&1 && {
@@ -28,17 +28,17 @@ storageDir="$HOME/.local/share/qemu-launcher"
         echo "Proper Menu not found! fuzzel|tofi|rofi|wofi|fzf"
         exit 1
     }
-}
+} # }}}
 
 pickMenu(){ # {{{
     eval "$QEMU_LAUNCHER_MENU $*"
 } # }}}
 
-checkLatestFile(){
+checkLatestFile(){ # {{{
     local dirName; dirName="$1"
     [[ "${dirName:(-1)}" != "/" ]] && dirName+="/"
     find "$dirName" -follow -type f -printf "%T@ %p\n" | sort | tail -n1 | cut -d ' ' '-f2-'
-}
+} # }}}
 
 maxRam="$(( $(grep --extended-regexp "MemTotal" /proc/meminfo | sed --expression='s/[^0-9]//g') / (1024 * 1024) ))" # {{{
 logialCores="$(grep -i --extended-regexp -c '^processor' /proc/cpuinfo)"
@@ -97,6 +97,7 @@ launchQemu(){ #{{{
     #     fi
     elif [[ $3 == "qemu-TUI" ]]; then
         local mountDir
+        # shellcheck disable=SC2015
         [[ -n "$2" ]] && {
             mountDir="$storageDir/mounts/$(echo "$2" | grep -oE '[^/]+$')"
         } || {
@@ -241,6 +242,17 @@ launchQemu(){ #{{{
             sudo -S umount "$mountDir"
         } || {
             sudo umount "$mountDir"
+        }
+    elif [[ "$3" == "ssh" ]]; then
+        # shellcheck disable=SC2015
+        [[ -z "$2" ]] && {
+            [[ -d "$storageDir/ssh" ]] || mkdir --parents "$storageDir/ssh"
+            eval "$executeCommand -vga none -display none" >> "$storageDir/log.txt" 2>&1\
+            &
+            ssh -o UserKnownHostsFile="$storageDir/ssh/$1" "$USER@localhost" -p "$qemuHostPort"
+        } || {
+            echo "sshing into an iso is currently unsupported at the moment"
+            exit 0
         }
     fi
 } #}}}
@@ -468,30 +480,35 @@ launchArch(){ # {{{
 declare -A menusAndCommands=( # {{{
     [" Arch linux installer; GUI"]="launchArchInstaller"
     [" Arch linux installer; qemu-TUI"]="launchArchInstaller qemu-TUI"
+    [" Arch linux installer; ssh"]="launchArchInstaller ssh"
 
     [" Arch linux; Gui"]="launchArch"
     [" Arch linux; qemu-TUI"]="launchArch qemu-TUI"
+    [" Arch linux; ssh"]="launchArch ssh"
 
     ["󱄅 NixOS installer; GUI"]="launchNixInstaller"
     ["󱄅 NixOS installer; qemu-TUI"]="launchNixInstaller qemu-TUI"
+    ["󱄅 NixOS installer; ssh"]="launchNixInstaller ssh"
 
     ["󱄅 NixOS; GUI"]="launchNix"
     ["󱄅 NixOS; qemu-TUI"]="launchNix qemu-TUI"
-
+    ["󱄅 NixOS; ssh"]="launchNix ssh"
 
     [" Alpine installer; GUI"]="launchAlpineInstaller"
     [" Alpine installer; qemu-TUI"]="launchAlpineInstaller qemu-TUI"
+    [" Alpine installer; ssh"]="launchAlpineInstaller ssh"
 
     [" Alpine; GUI"]="launchAlpine"
     [" Alpine; qemu-TUI"]="launchAlpine qemu-TUI"
-
+    [" Alpine; ssh"]="launchAlpine ssh"
 
     [" Gentoo installer; GUI"]="launchGentooInstaller"
     [" Gentoo installer; qemu-TUI"]="launchGentooInstaller qemu-TUI"
+    [" Gentoo installer; ssh"]="launchGentooInstaller ssh"
 
     [" Gentoo; GUI"]="launchGentoo"
     [" Gentoo; qemu-TUI"]="launchGentoo qemu-TUI"
-
+    [" Gentoo; ssh"]="launchGentoo ssh"
 
     [" Settings"]="changeQemuSettings "
 ) # }}}
