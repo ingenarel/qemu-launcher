@@ -88,13 +88,6 @@ launchQemu(){ #{{{
 
     if [[ -z $3 || $3 == "gui" ]]; then
         eval "${executeCommand} -vga virtio -display gtk,gl=on"
-    # elif [[ $3 == "ssh" ]]; then
-    #     sshCommand="ssh -t $USER@localhost -p$qemuHostPort 'tmux' || ( ssh-keygen -R '[localhost]:$qemuHostPort' && ssh -t $USER@localhost -p$qemuHostPort 'tmux' )"
-    #     if pgrep -f "qemu.+$1"; then
-    #         tmuxPaneOrTerminal "kitty" "$sshCommand"
-    #     else
-    #         eval "${executeCommand} -vga none -display none" & tmuxPaneOrTerminal "kitty" "$sshCommand"
-    #     fi
     elif [[ $3 == "qemu-TUI" ]]; then
         local mountDir
         # shellcheck disable=SC2015
@@ -320,25 +313,15 @@ installAlpineIso(){ # {{{
 launchAlpineInstaller(){ # {{{
     installAlpineIso
     createQemuImage "$storageDir/images/alpine-virt-latest-drive.img"
-    # shellcheck disable=SC2015
-    [[ -z $1 || $1 == "gui" ]] && {
-        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso"
-    } || { [[ $1 == "qemu-TUI" ]] && {
-        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso" "qemu-TUI"
-    };}
+    launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "$storageDir/isos/alpine-virt-latest.iso" "$1"
 } # }}}
 
 launchAlpine(){ # {{{
     [[ ! -f "$storageDir/images/alpine-virt-latest-drive.img" ]] && {
-        launchAlpineInstaller
+        launchAlpineInstaller "$1"
         exit 0;
     }
-    # shellcheck disable=SC2015
-    [[ -z $1 || $1 == "gui" ]] && {
-        launchQemu "$storageDir/images/alpine-virt-latest-drive.img"
-    } || { [[ $1 == "qemu-TUI" ]] && {
-        launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "" "qemu-TUI"
-    };}
+    launchQemu "$storageDir/images/alpine-virt-latest-drive.img" "" "$1"
 } # }}}
 
 installGentooIso(){ # {{{
@@ -364,25 +347,15 @@ installGentooIso(){ # {{{
 launchGentooInstaller(){ # {{{
     installGentooIso
     createQemuImage "$storageDir/images/gentoo-latest-drive.img"
-    # shellcheck disable=SC2015
-    [[ -z $1 || $1 == "gui" ]] && {
-        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso"
-    } || { [[ $1 == "qemu-TUI" ]] && {
-        launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso" "qemu-TUI"
-    };}
+    launchQemu "$storageDir/images/gentoo-latest-drive.img" "$storageDir/isos/gentoo-latest.iso" "$1"
 } # }}}
 
 launchGentoo(){ # {{{
     [[ ! -f "$storageDir/images/gentoo-latest-drive.img" ]] && {
-        launchGentooInstaller
+        launchGentooInstaller "$1"
         exit 0;
     }
-    # shellcheck disable=SC2015
-    [[ -z $1 || $1 == "gui" ]] && {
-        launchQemu "$storageDir/images/gentoo-latest-drive.img"
-    } || { [[ $1 == "qemu-TUI" ]] && {
-        launchQemu "$storageDir/images/gentoo-latest-drive.img" "" "qemu-TUI"
-    };}
+    launchQemu "$storageDir/images/gentoo-latest-drive.img" "" "$1"
 } # }}}
 
 installNixIso(){ # {{{
@@ -408,25 +381,15 @@ installNixIso(){ # {{{
 launchNixInstaller(){ # {{{
     installNixIso
     createQemuImage "$storageDir/images/nix-latest-drive.img"
-    # shellcheck disable=SC2015
-    [[ -z $1 || $1 == "gui" ]] && {
-        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso"
-    } || { [[ $1 == "qemu-TUI" ]] && {
-        launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso" "qemu-TUI"
-    };}
+    launchQemu "$storageDir/images/nix-latest-drive.img" "$storageDir/isos/nix-latest.iso" "$1"
 } # }}}
 
 launchNix(){ # {{{
     [[ ! -f "$storageDir/images/nix-latest-drive.img" ]] && {
-        launchNixInstaller
+        launchNixInstaller "$1"
         exit 0;
     }
-    # shellcheck disable=SC2015
-    [[ -z $1 || $1 == "gui" ]] && {
-        launchQemu "$storageDir/images/nix-latest-drive.img"
-    } || { [[ $1 == "qemu-TUI" ]] && {
-        launchQemu "$storageDir/images/nix-latest-drive.img" "" "qemu-TUI"
-    };}
+    launchQemu "$storageDir/images/nix-latest-drive.img" "" "$1"
 } # }}}
 
 installArchIso(){ # {{{
@@ -456,25 +419,15 @@ installArchIso(){ # {{{
 launchArchInstaller(){ # {{{
     installArchIso
     createQemuImage "$storageDir/images/arch-latest-drive.img"
-    # shellcheck disable=SC2015
-    [[ -z $1 || $1 == "gui" ]] && {
-        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso"
-    } || { [[ $1 == "qemu-TUI" ]] && {
-        launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso" "qemu-TUI"
-    };}
+    launchQemu "$storageDir/images/arch-latest-drive.img" "$storageDir/isos/arch-latest.iso" "$1"
 } # }}}
 
 launchArch(){ # {{{
     [[ ! -f "$storageDir/images/arch-latest-drive.img" ]] && {
-        launchArchInstaller
+        launchArchInstaller "$1"
         exit 0;
     }
-    # shellcheck disable=SC2015
-    [[ -z $1 || $1 == "gui" ]] && {
-        launchQemu "$storageDir/images/arch-latest-drive.img"
-    } || { [[ $1 == "qemu-TUI" ]] && {
-        launchQemu "$storageDir/images/arch-latest-drive.img" "" "qemu-TUI"
-    };}
+    launchQemu "$storageDir/images/arch-latest-drive.img" "" "$1"
 } # }}}
 
 declare -A menusAndCommands=( # {{{
