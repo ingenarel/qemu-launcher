@@ -272,7 +272,7 @@ createQemuImage(){ # {{{
         echo "latest drive not found"
         qemu-img create -f qcow2 "$1" "$(
             echo -en "$(
-                for (( i = 1; i<= 30; i++))  do
+                for (( i = 1; i<= $( df -h "$storageDir" | tail -n1 | sed -nE 's/^\S+\s+\S+\s+([0-9]+).+/\1/p' ); i++ ))  do
                     printf "%s G\n" "$i"
                 done
             )"\
@@ -513,18 +513,20 @@ startQemu(){ # {{{
 [[ ! -d "$storageDir/images" ]] && mkdir --parents "$storageDir/images"
 [[ ! -d "$storageDir/isos" ]] && mkdir --parents "$storageDir/isos"
 
-while true; do # {{{
-    startQemu "$@"
-    # shellcheck disable=SC2015
-    [[ -n "$chosen" ]] && {
-        [[ "$chosen" == " Settings" ]] && {
-            changeQemuSettings
-            continue
-        } || {
-            eval "${menusAndCommands["$chosen"]}"
-            exit 0
-        }
-    } || {
-        exit 0
-    }
-done # }}}
+createQemuImage "$storageDir/images/alpine-virt-latest-drive.img"
+
+# while true; do # {{{
+#     startQemu "$@"
+#     # shellcheck disable=SC2015
+#     [[ -n "$chosen" ]] && {
+#         [[ "$chosen" == " Settings" ]] && {
+#             changeQemuSettings
+#             continue
+#         } || {
+#             eval "${menusAndCommands["$chosen"]}"
+#             exit 0
+#         }
+#     } || {
+#         exit 0
+#     }
+# done # }}}
