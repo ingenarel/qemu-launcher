@@ -246,7 +246,7 @@ launchQemu(){ #{{{
             eval "$executeCommand -vga none -display none" >> "$storageDir/log.txt" 2>&1\
             & {
                 sleep 5
-                ssh -o UserKnownHostsFile="$storageDir/ssh/$(echo "$1" | grep -oE '[^/]+')" "$QEMU_USER@localhost" -p "$qemuHostPort"
+                ssh -o UserKnownHostsFile="$storageDir/ssh/$(echo "$1" | grep -oE '[^/]+$')" "$QEMU_USER@localhost" -p "$qemuHostPort"
                 exit 0
             }
         } || {
