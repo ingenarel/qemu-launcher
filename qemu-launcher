@@ -530,20 +530,18 @@ startQemu(){ # {{{
 [[ ! -d "$storageDir/images" ]] && mkdir --parents "$storageDir/images"
 [[ ! -d "$storageDir/isos" ]] && mkdir --parents "$storageDir/isos"
 
-createQemuImage "$storageDir/images/alpine-virt-latest-drive.img"
-
-# while true; do # {{{
-#     startQemu "$@"
-#     # shellcheck disable=SC2015
-#     [[ -n "$chosen" ]] && {
-#         [[ "$chosen" == " Settings" ]] && {
-#             changeQemuSettings
-#             continue
-#         } || {
-#             eval "${menusAndCommands["$chosen"]}"
-#             exit 0
-#         }
-#     } || {
-#         exit 0
-#     }
-# done # }}}
+while true; do # {{{
+    startQemu "$@"
+    # shellcheck disable=SC2015
+    [[ -n "$chosen" ]] && {
+        [[ "$chosen" == " Settings" ]] && {
+            changeQemuSettings
+            continue
+        } || {
+            eval "${menusAndCommands["$chosen"]}"
+            exit 0
+        }
+    } || {
+        exit 0
+    }
+done # }}}
